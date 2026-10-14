@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Crystal Syndicate - Master's Edition</title>
+<style>
+  :root {
+    --bg-base: #0a0c0a;
+    --panel-bg: #111411;
+    --panel-border: #1e261e;
+    --silver-bright: #e2e8e2;
+    --silver-main: #9ca39c;
+    --silver-dim: #647064;
+    --silver-dark: #2a332a;
+    
+    --status-green: #4ade80;
+    --status-red: #ef4444;
+    --status-amber: #d97706;
+    --status-blue: #38bdf8;
+    --status-purple: #d946ef;
+    --status-exotic: #0ea5e9;
+    
+    --t0-col: #647064; --t1-col: #4ade80; --t2-col: #38bdf8; --t3-col: #3b82f6; --t4-col: #a855f7; 
+    --t5-col: #d946ef; --t6-col: #f59e0b; --t7-col: #ea580c; --t8-col: #ef4444; --t9-col: #10b981;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+  html, body { width: 100%; height: 100%; background: var(--bg-base); color: var(--silver-bright); display: flex; flex-direction: column; overflow: hidden; }
+
+  body::before {
+    content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.04) 0%, transparent 65%);
+    pointer-events: none; z-index: 1;
+  }
+
+  header { flex-shrink: 0; background: #050605; border-bottom: 1px solid var(--status-green); padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand-title { font-size: 13px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #fff; }
+  .brand-title span { color: var(--status-green); text-shadow: 0 0 5px rgba(74,222,128,0.4); }
+
+  .hud-stats { display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; padding-bottom: 2px; }
+  .hud-stats::-webkit-scrollbar { display: none; }
+  .hud-pill { background: #000; border: 1px solid var(--panel-border); padding: 3px 6px; border-radius: 3px; font-size: 10px; font-family: monospace; font-weight: bold; }
+
+  nav { flex-shrink: 0; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--panel-bg); border-bottom: 1px solid var(--panel-border); z-index: 9; }
+  .nav-btn { padding: 10px 4px; background: transparent; border: none; border-right: 1px solid var(--panel-border); border-bottom: 1px solid var(--panel-border); color: var(--silver-dim); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: 0.15s; text-align: center; }
+  .nav-btn:nth-child(3n) { border-right: none; }
+  .nav-btn:nth-child(n+7) { border-bottom: none; }
+  .nav-btn.active { background: rgba(74, 222, 128, 0.08); color: var(--status-green); box-shadow: inset 0 -2px 0 var(--status-green); }
+
+  main { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 70px; z-index: 2; }
+  .view-tab { display: none; flex-direction: column; gap: 10px; }
+  .view-tab.active { display: flex; }
+
+  .panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 5px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .panel-header { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: #fff; padding-bottom: 6px; border-bottom: 1px solid var(--panel-border); display: flex; justify-content: space-between; align-items: center; }
+
+  .control-bar { display: flex; flex-wrap: wrap; gap: 6px; background: #050605; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--panel-border); align-items: center; }
+  .control-group { display: flex; gap: 4px; align-items: center; border-right: 1px solid var(--panel-border); padding-right: 6px; }
+  .control-group:last-child { border-right: none; padding-right: 0; }
+  .control-label { font-size: 8.5px; font-weight: bold; color: var(--silver-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  button.btn { background: #000; border: 1px solid var(--silver-dim); color: var(--silver-bright); padding: 5px 9px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border-radius: 3px; cursor: pointer; transition: 0.1s; }
+  button.btn:active { background: var(--silver-bright); color: #000; border-color: var(--silver-bright); }
+  button.btn:disabled { opacity: 0.35; cursor: not-allowed; border-color: var(--silver-dark); }
+  button.btn-green { background: #091209; border-color: var(--status-green); color: var(--status-green); }
+  button.btn-green:active { background: var(--status-green); color: #000; }
+  button.btn-danger { border-color: var(--status-red); color: var(--status-red); }
+  button.btn-danger:active { background: var(--status-red); color: #fff; }
+  button.btn-purple { border-color: var(--status-purple); color: var(--status-purple); }
+  button.btn-purple:active { background: var(--status-purple); color: #fff; }
+
+  .fleet-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  @media(min-width: 600px) { .fleet-grid { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); } }
+
+  .strain-card { background: #050605; border: 1px solid var(--panel-border); border-radius: 4px; padding: 10px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+  .strain-card.in-flight { border-left: 3px solid var(--status-green); }
+  .strain-card.damaged { border-left: 3px solid var(--status-red); }
+  
+  .bud-art-container { display: flex; gap: 10px; align-items: center; background: #080a08; border: 1px solid var(--panel-border); padding: 6px; border-radius: 3px; }
+  .bud-pixel-canvas { width: 64px; height: 64px; image-rendering: pixelated; border-radius: 2px; background: #000; flex-shrink: 0; border: 1px solid #142014; cursor: zoom-in; }
+
+  .spec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; background: #080a08; padding: 6px; border-radius: 3px; font-size: 9px; font-family: monospace; border: 1px solid var(--panel-border); }
+  .spec-grid span { color: var(--silver-dim); }
+
+  .badge { padding: 2px 4px; border-radius: 2px; font-size: 8px; font-weight: 900; font-family: monospace; background: #091209; color: var(--status-green); border: 1px solid var(--status-green); }
+  
+  .route-row { background: #050605; border: 1px solid var(--panel-border); border-radius: 3px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
+
+  .flight-bar-bg { width: 100%; height: 6px; background: #111; border: 1px solid #1a261a; border-radius: 2px; overflow: hidden; margin-top: 2px; }
+  .flight-bar-fill { height: 100%; background: var(--status-green); width: 0%; box-shadow: 0 0 6px var(--status-green);}
+
+  .auction-slot { background: #050605; border: 1px solid var(--panel-border); padding: 10px; border-radius: 4px; display: flex; flex-direction: column; gap: 6px; }
+  .auction-timer-bg { width: 100%; height: 5px; background: #111; border: 1px solid var(--status-green); border-radius: 2px; overflow: hidden; }
+  .auction-timer-bar { height: 100%; background: var(--status-green); width: 100%; transition: width 0.1s linear;}
+  .auction-log { height: 44px; background: #080a08; border: 1px solid var(--panel-border); padding: 4px; font-size: 8.5px; font-family: monospace; overflow: hidden; border-radius: 3px; color: var(--silver-main); }
+
+  .fraction-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .pack-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  select { background: #080a08; color: #fff; border: 1px solid var(--silver-dark); padding: 5px; font-size: 10px; border-radius: 3px; outline: none; font-weight: bold; cursor: pointer; }
+  
+  .check-item { display: flex; justify-content: space-between; align-items: center; background: #050605; padding: 8px 10px; border: 1px solid var(--panel-border); border-radius: 3px; font-size: 10px; }
+  .check-item.done { border-color: var(--status-green); background: rgba(74, 222, 128, 0.08); }
+
+  /* 3D Voxel Mineral Inspector Modal */
+  #voxel-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 2000; align-items: center; justify-content: center; padding: 16px; }
+  #voxel-modal.open { display: flex; }
+  .modal-box { background: var(--panel-bg); border: 1px solid var(--status-green); border-radius: 8px; padding: 12px; max-width: 440px; width: 100%; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); }
+  #inspect-canvas { width: 100%; height: auto; aspect-ratio: 1/1; background: #050705; border-radius: 4px; cursor: grab; image-rendering: pixelated; border: 1px solid var(--panel-border); }
+
+  #toast-rack { position: fixed; bottom: 16px; left: 10px; right: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 1000; pointer-events: none; }
+  .toast { background: #000; border: 1px solid var(--silver-dark); border-left: 3px solid var(--status-green); color: #fff; padding: 8px 12px; font-size: 11px; font-weight: bold; font-family: monospace; border-radius: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.9); animation: slideUp 0.2s, fadeOut 0.4s 2.6s forwards; pointer-events: auto;}
+  
+  @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes fadeOut { to { opacity: 0; transform: translateY(-5px); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand-title">CRYSTAL SYNDICATE <span>// V3.0 SOLID CORE</span></div>
+    <div style="display:flex; gap:4px;">
+      <button class="btn" style="padding:3px 6px; font-size:8px;" onclick="saveGame()">SAVE</button>
+      <button class="btn" style="padding:3px 6px; font-size:8px;" onclick="loadGame()">LOAD</button>
+      <button class="btn btn-danger" style="padding:3px 6px; font-size:8px;" onclick="godMode()">SMITHSONIAN</button>
+    </div>
+  </div>
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="hud-stats">
+        <div class="hud-pill">CASH: <span id="hud-funds" style="color:var(--status-green);">$0</span></div>
+        <div class="hud-pill">CABINETS: <span id="hud-fleet-count">0</span></div>
+        <div class="hud-pill">CURATORS: <span id="hud-pilot-count">0</span></div>
+        <div class="hud-pill">ACID/GRIT: <span id="hud-fuel" style="color:var(--status-amber);">0</span></div>
+      </div>
+      <div class="control-bar" style="padding:2px 4px; margin-left:4px;">
+        <button class="btn btn-green active" id="buy-1" style="padding:2px 4px; font-size:8px;" onclick="setBuyMode(1)">1x</button>
+        <button class="btn" id="buy-0.25" style="padding:2px 4px; font-size:8px;" onclick="setBuyMode(0.25)">25%</button>
+        <button class="btn" id="buy-0.5" style="padding:2px 4px; font-size:8px;" onclick="setBuyMode(0.5)">50%</button>
+        <button class="btn" id="buy-1.0" style="padding:2px 4px; font-size:8px;" onclick="setBuyMode(1.0)">MAX</button>
+      </div>
+  </div>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="setTab('market')">Quarry Drops</button>
+  <button class="nav-btn" onclick="setTab('gacha')">Paydirt & Pockets</button>
+  <button class="nav-btn" onclick="setTab('fleet')">Display Cases</button>
+  <button class="nav-btn" onclick="setTab('pilots')">Geologists</button>
+  <button class="nav-btn" onclick="setTab('routes')">Gem Shows</button>
+  <button class="nav-btn" onclick="setTab('auction')">Mineral Auctions</button>
+  <button class="nav-btn" onclick="setTab('checklist')">Prep Lab</button>
+  <button class="nav-btn" onclick="setTab('upgrades')">Lapidary Tech</button>
+  <button class="nav-btn" onclick="setTab('gallery')">Museum Vault 💎</button>
+</nav>
+
+<main>
+
+  <!-- TAB 1: REVOLVING QUARRY MARKET (TEXT-ONLY FOR ZERO LAG) -->
+  <div id="tab-market" class="view-tab active">
+    <div class="panel">
+      <div class="panel-header">
+        <span>Mine Tailings, Geodes & Fossil Finds</span>
+        <span style="font-size:10px; color:var(--silver-dim);">NEW BLAST: <span id="market-timer" style="font-size:12px; font-weight:bold; color:var(--status-green);">10.0</span>s</span>
+      </div>
+      <p style="font-size:10px; color:var(--silver-dim);">5 procedural minerals, geodes & fossils surface every 10 seconds at realistic collector prices. Acquire a piece to unveil its solid 512x512 3D Voxel structure in your Display Cases.</p>
+      <div id="market-grid" class="fleet-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: PAYDIRT & POCKET STRIKES -->
+  <div id="tab-gacha" class="view-tab">
+    <div class="panel">
+      <div class="panel-header">Mine Claims & Unopened Geode Boulders</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; font-weight:bold; margin-bottom:6px;">TAILINGS PAYDIRT BUCKET [T1-T4] ($20 / Bucket)</div>
+          <div class="pack-row">
+            <button class="btn" onclick="buySeeds(0, 1)">Crack 1x</button>
+            <button class="btn" onclick="buySeeds(0, 5)">Crack 5x</button>
+            <button class="btn btn-green" onclick="buySeeds(0, 10)">Crack 10x</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; color:var(--status-blue); font-weight:bold; margin-bottom:6px;">PEGMATITE & GEODE FLAT [T3-T6] ($200 / Flat)</div>
+          <div class="pack-row">
+            <button class="btn" style="border-color:var(--status-blue); color:var(--status-blue);" onclick="buySeeds(1, 1)">Crack 1x</button>
+            <button class="btn" style="border-color:var(--status-blue); color:var(--status-blue);" onclick="buySeeds(1, 5)">Crack 5x</button>
+            <button class="btn btn-green" onclick="buySeeds(1, 10)">Crack 10x</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; color:var(--status-purple); font-weight:bold; margin-bottom:6px;">ALPINE VUG & FOSSIL CRATE [T5-T8] ($2,000 / Crate)</div>
+          <div class="pack-row">
+            <button class="btn btn-purple" onclick="buySeeds(2, 1)">Crack 1x</button>
+            <button class="btn btn-purple" onclick="buySeeds(2, 5)">Crack 5x</button>
+            <button class="btn btn-green" onclick="buySeeds(2, 10)">Crack 10x</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; color:var(--status-amber); font-weight:bold; margin-bottom:6px;">OLD-COLLECTION ESTATE VAULT [T7-T10] ($15,000 / Lot)</div>
+          <div class="pack-row">
+            <button class="btn" style="border-color:var(--status-amber); color:var(--status-amber);" onclick="buySeeds(3, 1)">Crack 1x</button>
+            <button class="btn" style="border-color:var(--status-amber); color:var(--status-amber);" onclick="buySeeds(3, 5)">Crack 5x</button>
+            <button class="btn btn-green" onclick="buySeeds(3, 10)">Crack 10x</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Geologist & Prepper Recruitment</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; font-weight:bold; margin-bottom:6px;">ROCKHOUND INTERNS [T1-T4] ($25 / Hire)</div>
+          <div class="pack-row">
+            <button class="btn" onclick="buyResumes(0, 1)">Hire 1x</button>
+            <button class="btn" onclick="buyResumes(0, 5)">Hire 5x</button>
+            <button class="btn btn-green" onclick="buyResumes(0, 10)">Hire 10x</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; color:var(--status-blue); font-weight:bold; margin-bottom:6px;">LAPIDARY TECHS [T3-T6] ($150 / Hire)</div>
+          <div class="pack-row">
+            <button class="btn" style="border-color:var(--status-blue); color:var(--status-blue);" onclick="buyResumes(1, 1)">Hire 1x</button>
+            <button class="btn" style="border-color:var(--status-blue); color:var(--status-blue);" onclick="buyResumes(1, 5)">Hire 5x</button>
+            <button class="btn btn-green" onclick="buyResumes(1, 10)">Hire 10x</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; color:var(--status-purple); font-weight:bold; margin-bottom:6px;">MINERALOGISTS [T5-T8] ($800 / Hire)</div>
+          <div class="pack-row">
+            <button class="btn btn-purple" onclick="buyResumes(2, 1)">Hire 1x</button>
+            <button class="btn btn-purple" onclick="buyResumes(2, 5)">Hire 5x</button>
+            <button class="btn btn-green" onclick="buyResumes(2, 10)">Hire 10x</button>
+          </div>
+        </div>
+        <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px;">
+          <div style="font-size:10px; color:var(--status-amber); font-weight:bold; margin-bottom:6px;">MUSEUM CURATORS [T7-T10] ($4,000 / Hire)</div>
+          <div class="pack-row">
+            <button class="btn" style="border-color:var(--status-amber); color:var(--status-amber);" onclick="buyResumes(3, 1)">Hire 1x</button>
+            <button class="btn" style="border-color:var(--status-amber); color:var(--status-amber);" onclick="buyResumes(3, 5)">Hire 5x</button>
+            <button class="btn btn-green" onclick="buyResumes(3, 10)">Hire 10x</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span>Prep Lab Supply (Oxalic Acid & Diamond Grit)</span>
+        <span style="font-size:11px; font-weight:bold; color:var(--status-amber);">$<span id="fuel-price">0.25</span> / UNIT</span>
+      </div>
+      <div class="fraction-row">
+        <button class="btn" onclick="buyFuelFixed(500)">500 Units</button>
+        <button class="btn" onclick="buyFuelFixed(2500)">2.5K Units</button>
+        <button class="btn" onclick="buyFuelFixed(10000)">10K Units</button>
+        <button class="btn btn-green" onclick="buyFuelFixed('MAX')">Max Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: DISPLAY CASES (INVENTORY) -->
+  <div id="tab-fleet" class="view-tab">
+    <div class="panel">
+      <div class="panel-header">
+        <span>Specimen Display Cases</span>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-green" onclick="autoAssignPilots()">Auto-Curator</button>
+          <button class="btn btn-green" onclick="autoAssignRoutes()">Auto-Show</button>
+          <button class="btn btn-green" onclick="dispatchAll()">Exhibit All</button>
+          <button class="btn" onclick="maintainAll()">Clean All</button>
+        </div>
+      </div>
+      
+      <div class="control-bar">
+        <div class="control-group">
+          <span class="control-label">Sort:</span>
+          <button class="btn" style="padding:4px 6px; font-size:8px;" onclick="sortHangar('val')">VAL</button>
+          <button class="btn" style="padding:4px 6px; font-size:8px;" onclick="sortHangar('tier')">TIER</button>
+          <button class="btn" style="padding:4px 6px; font-size:8px;" onclick="sortHangar('range')">DIST</button>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Habit:</span>
+          <select id="fleet-role-filter" onchange="filterHangarRole(this.value)" style="padding:3px; font-size:9px; width:auto;">
+            <option value="ALL">All Habits</option>
+            <option value="PRISMATIC">Prismatic Points</option>
+            <option value="GEODE">Cathedral Geode</option>
+            <option value="CUBIC">Cubic / Hopper</option>
+            <option value="BOTRYOIDAL">Botryoidal Mass</option>
+            <option value="FOSSIL">Fossil in Matrix</option>
+            <option value="NATIVE_METEOR">Native / Meteorite</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Tier:</span>
+          <select id="fleet-tier-filter" onchange="filterHangarTier(this.value)" style="padding:3px; font-size:9px; width:auto;">
+            <option value="ALL">All Grades</option>
+            <option value="0">T1</option><option value="1">T2</option><option value="2">T3</option><option value="3">T4</option><option value="4">T5</option>
+            <option value="5">T6</option><option value="6">T7</option><option value="7">T8</option><option value="8">T9</option><option value="9">T10</option>
+          </select>
+        </div>
+        <button class="btn btn-green" style="padding:4px 6px; font-size:8px;" onclick="importStrain()">Import Base36</button>
+      </div>
+
+      <div class="fraction-row">
+        <button class="btn btn-danger" onclick="quickSellStrains(0)">Sell T1</button>
+        <button class="btn btn-danger" onclick="quickSellStrains(1)">Sell T2&lt;</button>
+        <button class="btn btn-danger" onclick="quickSellStrains(2)">Sell T3&lt;</button>
+        <button class="btn btn-danger" onclick="quickSellStrains(3)">Sell T4&lt;</button>
+      </div>
+
+      <div id="fleet-list" class="fleet-grid"></div>
+    </div>
+  </div>
+  
+  <!-- TAB: MUSEUM VAULT GALLERY -->
+  <div id="tab-gallery" class="view-tab">
+    <div class="panel">
+      <div class="panel-header"><span>Private Museum Vault 💎</span></div>
+      <p style="font-size:10px; color:var(--silver-dim);">Lock your finest solid 512x512 3D Voxel Minerals, Geodes & Fossils forever. Tap any specimen to rotate in 3D.</p>
+      <div id="gallery-grid" class="fleet-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB 4: GEOLOGISTS -->
+  <div id="tab-pilots" class="view-tab">
+    <div class="panel">
+      <div class="panel-header"><span>Geologist & Curator Roster</span></div>
+      
+      <div class="control-bar">
+        <div class="control-group">
+          <span class="control-label">Sort:</span>
+          <button class="btn" style="padding:4px 6px; font-size:8px;" onclick="sortPilots('val')">VAL</button>
+          <button class="btn" style="padding:4px 6px; font-size:8px;" onclick="sortPilots('tier')">TIER</button>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Tier:</span>
+          <select id="pilot-tier-filter" onchange="filterPilotTier(this.value)" style="padding:3px; font-size:9px; width:auto;">
+            <option value="ALL">All Tiers</option>
+            <option value="0">T1</option><option value="1">T2</option><option value="2">T3</option><option value="3">T4</option><option value="4">T5</option>
+            <option value="5">T6</option><option value="6">T7</option><option value="7">T8</option><option value="8">T9</option><option value="9">T10</option>
+          </select>
+        </div>
+        <button class="btn btn-green" style="padding:4px 6px; font-size:8px;" onclick="importCourier()">Import Base36</button>
+      </div>
+
+      <div class="fraction-row">
+        <button class="btn btn-danger" onclick="quickSellPilots(0)">Fire T1</button>
+        <button class="btn btn-danger" onclick="quickSellPilots(1)">Fire T2&lt;</button>
+        <button class="btn btn-danger" onclick="quickSellPilots(2)">Fire T3&lt;</button>
+        <button class="btn btn-danger" onclick="quickSellPilots(3)">Fire T4&lt;</button>
+      </div>
+
+      <div id="pilots-grid" class="fleet-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB 5: GEM & MINERAL SHOWS -->
+  <div id="tab-routes" class="view-tab">
+    <div class="panel">
+      <div class="panel-header">
+        <span>Gem, Mineral & Fossil Shows (400)</span>
+        <select id="route-cat-filter" onchange="filterRouteCategory(this.value)" style="padding:3px; font-size:9px; width:auto;">
+          <option value="ALL">All Shows</option>
+          <option value="PRISMATIC">Prismatic Demand</option>
+          <option value="GEODE">Geode Demand</option>
+          <option value="CUBIC">Cubic / Hopper Demand</option>
+          <option value="BOTRYOIDAL">Botryoidal Demand</option>
+          <option value="FOSSIL">Fossil Demand</option>
+          <option value="NATIVE_METEOR">Native / Meteorite Demand</option>
+        </select>
+      </div>
+      <div id="routes-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+  </div>
+
+  <!-- TAB 6: MINERAL AUCTIONS (UNTOUCHED CRAZY BIDDING WAR MECHANICS!) -->
+  <div id="tab-auction" class="view-tab">
+    <div class="panel">
+      <div class="panel-header"><span>Fine Mineral Auction House</span><span style="color:var(--status-amber);"><span id="auction-count">0</span>/10 LANES</span></div>
+      <p style="font-size:10px; color:var(--silver-dim);">10 live collector & museum bidding lanes with overtime sniping and massive 2x–20x bidding war spikes.</p>
+      
+      <div style="display:flex; gap:6px;">
+        <button class="btn btn-green" style="flex:1; padding:8px;" onclick="fillAuctions('planes')">Auto-Fill 10 Cheapest Specimens</button>
+        <button class="btn btn-green" style="flex:1; padding:8px;" onclick="fillAuctions('pilots')">Auto-Fill 10 Novice Interns</button>
+      </div>
+
+      <div id="auction-idle" style="text-align:center; padding:16px; color:var(--silver-dim); font-size:11px;">Lanes empty. Send specimens to the auction block.</div>
+      <div id="auction-board" class="fleet-grid"></div>
+    </div>
+  </div>
+
+  <!-- TAB 7: PREP LAB & COMMISSIONS -->
+  <div id="tab-checklist" class="view-tab">
+    <div class="panel">
+      <div class="panel-header">Prep Lab Automations</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div class="check-item">
+          <div><strong>Auto-Show Circuit:</strong> Automatically sends specimens back to gem shows upon return.</div>
+          <button id="chk-autoloop" class="btn" onclick="toggleAutoLoop()">ENABLE</button>
+        </div>
+        <div class="check-item">
+          <div><strong>Auto Ultrasonic & Acid Clean:</strong> Automatically restores luster if condition drops below 45%.</div>
+          <button id="chk-automro" class="btn" onclick="toggleAutoMRO()">ENABLE</button>
+        </div>
+        <div class="check-item">
+          <div><strong>Auto Acid/Grit Restock:</strong> Buys 2,500 Units when lab supply drops below 500.</div>
+          <button id="chk-autorefuel" class="btn" onclick="toggleAutoRefuel()">ENABLE</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span>Museum Acquisitions & Collector Requests</span>
+        <button class="btn btn-green" style="padding:2px 6px; font-size:8px;" onclick="refreshSideMissions()">New Requests</button>
+      </div>
+      <p style="font-size:10px; color:var(--silver-dim); margin-bottom:4px;">Exhibit requested crystal or fossil habits at designated gem shows to earn acquisition grants and rare specimens.</p>
+      <div id="side-missions-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Mineralogy Milestones</div>
+      <div id="milestone-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+    </div>
+  </div>
+
+  <!-- TAB 8: LAPIDARY TECH UPGRADES -->
+  <div id="tab-upgrades" class="view-tab">
+    <div class="panel">
+      <div class="panel-header">Gallery & Prep Lab Upgrades</div>
+      <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px; background:#000;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+          <span style="font-weight:bold; color:var(--status-green);">Halogen & UV-SW/LW Showcase Lighting</span>
+          <span style="color:var(--silver-dim);">Lvl <span id="upg-mkt-lvl">0</span> (+<span id="upg-mkt-pct">0</span>%)</span>
+        </div>
+        <div style="font-size:9.5px; color:var(--silver-dim); margin-bottom:6px;">Permanently boosts gem show exhibition payouts by +5% per level.</div>
+        <button class="btn btn-green" style="width:100%;" onclick="buyUpgrade('mkt')">Upgrade ($<span id="upg-mkt-cost">250</span>)</button>
+      </div>
+      <div style="border:1px solid var(--panel-border); padding:8px; border-radius:3px; background:#000;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;">
+          <span style="color:var(--status-blue); font-weight:bold;">Micro-Air Scribe & Acid Fume Hood</span>
+          <span style="color:var(--silver-dim);">Lvl <span id="upg-eng-lvl">0</span> (-<span id="upg-eng-pct">0</span>%)</span>
+        </div>
+        <div style="font-size:9.5px; color:var(--silver-dim); margin-bottom:6px;">Permanently reduces Acid/Grit consumption by 2% per level (Max 70%).</div>
+        <button class="btn" style="border-color:var(--status-blue); color:var(--status-blue); width:100%;" onclick="buyUpgrade('eng')">Upgrade ($<span id="upg-eng-cost">400</span>)</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 60 FPS 3D VOXEL MINERAL INSPECTOR MODAL -->
+<div id="voxel-modal" onclick="if(event.target.id==='voxel-modal') closeInspectModal()">
+  <div class="modal-box">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span id="modal-title" style="font-size:12px; font-weight:900; color:var(--status-green);">3D Mineral & Fossil Inspector</span>
+      <button class="btn btn-danger" onclick="closeInspectModal()">CLOSE ✕</button>
+    </div>
+    <canvas id="inspect-canvas" width="512" height="512"></canvas>
+    <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--silver-dim); font-family:monospace;">
+      <span id="modal-sub">Habit: PRISMATIC</span>
+      <span>🖱️ Drag to Rotate 3D (60 FPS)</span>
+    </div>
+  </div>
+</div>
+
+<div id="toast-rack"></div>
+
+<script>
+  /* ================= 9,600 GEOLOGY & FOSSIL COMBINATIONS ================= */
+  const TREE_PREFIXES = [
+    "Natural",          // 0: Classic untreated mineral color
+    "Gem-Grade",        // 1: High-clarity saturated gem tone
+    "Iridescent",       // 2: Rainbow oxide / bornite peacock tarnish
+    "Phantom-Zoned",    // 3: Internal ghost growth-zone bands
+    "Bi-Color",         // 4: Dual-zone color split (e.g. Watermelon Tourmaline / Ametrine)
+    "Sceptered",        // 5: Dramatic overgrown crown termination
+    "UV-Fluorescent",   // 6: Shortwave UV neon glow accents
+    "Pyritized",        // 7: Golden iron-sulfide metallic replacement
+    "Agatized",         // 8: Banded chalcedony silica replacement
+    "Holotype"          // 9: Museum-grade perfection
+  ]; // 10
+
+  const TREE_ORIGINS = [
+    "Pegmatite-Matrix", // 0: Solid granite & smoky feldspar host boulder
+    "Albite-Perched",   // 1: Perched on snowy white cleavelandite matrix
+    "Basalt-Core",      // 2: Solid dark volcanic traprock boulder
+    "Skarn-Pocket",     // 3: Epidote-green & garnet calc-silicate rock
+    "Limestone-Slab",   // 4: Solid grey sedimentary fossil bed
+    "Gossan-Ironstone", // 5: Ochre-rust oxidized iron cap rock
+    "Quartz-Vein",      // 6: Solid milky bull-quartz boulder
+    "Museum-Plinth"     // 7: Custom beveled display mount
+  ]; // 8
+
+  const TREE_SPECIES = [
+    "Aquamarine Beryl", "Watermelon Tourmaline", "Muzo Emerald", "Smoky Quartz", "Imperial Topaz",
+    "Amethyst Cathedral Geode", "Citrine Cathedral Geode", "Lake Superior Agate Geode",
+    "Navajun Pyrite", "Rogerley Fluorite", "Hopper Bismuth", "Sweet Home Rhodochrosite",
+    "Velvet Malachite", "Grape Agate", "Milpillas Azurite",
+    "Pyritized Ammonite Fossil", "Megalodon Shark Tooth", "Devonian Trilobite Fossil",
+    "Crystalline Gold-in-Quartz", "Esquel Pallasite Meteorite"
+  ]; // 20
+
+  const TREE_STYLES = ["PRISMATIC", "GEODE", "CUBIC", "BOTRYOIDAL", "FOSSIL", "NATIVE_METEOR"]; // 6
+
+  const P_FIRST = ["Dana", "Mohs", "Banfield", "Sorby", "Beryl", "Kunz", "Pough", "Sinkankas", "Bancroft", "Curie", "Bragg", "Haüy", "Steno", "Werner", "Lyell", "Hutton", "Fersman", "Goldschmidt", "Bowen", "Anning"];
+  const P_LAST = ["Vance", "Mercer", "Kovac", "Reyes", "Moreau", "Tanaka", "Saito", "Strunz", "Mindat", "Lavoisier", "Pliny", "Agricola", "Keller", "Gubelin", "Koivula", "Rossman", "Fritsch", "Nassau", "Crowningshield", "Mantell"];
+  const P_CALL = ["'The Loupe'", "'Pocket-Finder'", "'Air-Scribe'", "'Steady-Chisel'", "'UV-Eye'", "'Pegmatite'", "'Goniometer'", "'Hardness-10'"];
+  const B_TYPES = ["PREP","SPEED","ACID","PACKING"]; 
+
+  /* REALISTIC MINERAL COLLECTOR PRICE POINTS ($15 Field Rough -> $250,000 Smithsonian Holotype) */
+  const TIERS = [
+    { tier: 1, name: "Tier I: Field Rough", color: "var(--t0-col)", baseVal: 15 },
+    { tier: 2, name: "Tier II: Thumbnail (TN)", color: "var(--t1-col)", baseVal: 45 },
+    { tier: 3, name: "Tier III: Toenail", color: "var(--t2-col)", baseVal: 120 },
+    { tier: 4, name: "Tier IV: Miniature", color: "var(--t3-col)", baseVal: 350 },
+    { tier: 5, name: "Tier V: Small Cabinet", color: "var(--t4-col)", baseVal: 950 },
+    { tier: 6, name: "Tier VI: Cabinet Grade", color: "var(--t5-col)", baseVal: 2800 },
+    { tier: 7, name: "Tier VII: Fine Collector", color: "var(--t6-col)", baseVal: 8500 },
+    { tier: 8, name: "Tier VIII: Exhibition Matrix", color: "var(--t7-col)", baseVal: 25000 },
+    { tier: 9, name: "Tier IX: Museum Masterpiece", color: "var(--t8-col)", baseVal: 75000 },
+    { tier: 10, name: "Tier X: World Holotype", color: "var(--t9-col)", baseVal: 250000 }
+  ];
+
+  const ZONE_CAT = {
+    PRISMATIC: ["Tucson Main Show","Denver Coliseum","Pala Pegmatite Symposium","Alpine Quartz Salon"],
+    GEODE: ["Quartzsite Tailgate","Minas Gerais Pavilion","Keokuk Geode Fest","Cathedral Gallery"],
+    CUBIC: ["Sainte-Marie-aux-Mines","Munich Mineralientage","Spanish Pyrite Hall","Illinois Fluorite Expo"],
+    BOTRYOIDAL: ["Bisbee Copper Queen Show","Katanga Malachite Salon","Indonesian Agate Expo","Tsumeb Collectors Gala"],
+    FOSSIL: ["Lyme Regis Fossil Fest","Solnhofen Quarry Expo","Kemmerer Fossil Butte","Paleontology Hall"],
+    NATIVE_METEOR: ["Ensisheim Meteorite Show","California Motherlode Expo","Kongsberg Silver Hall","Smithsonian Vault Preview"]
+  };
+
+  const MILESTONES = [
+    { id: "m1", title: "First Show Table", desc: "Exhibit a specimen at a gem show.", reward: 200, req: s => s.fleet.some(p => p.status === 'IN_FLIGHT' || p.expRev > 0) },
+    { id: "m2", title: "Curio Shelf", desc: "Hold 5 or more specimens in your Display Cases.", reward: 500, req: s => s.fleet.length >= 5 },
+    { id: "m3", title: "Prep Crew", desc: "Hire 5 or more geologists/preppers.", reward: 400, req: s => s.pilots.length >= 5 },
+    { id: "m4", title: "Regional Dealer", desc: "Unlock a gem show > 3,000 Miles.", reward: 1500, req: s => s.routes.some(r => r.unlocked && r.dist >= 3000) },
+    { id: "m5", title: "Cathedral Splitter", desc: "Acquire a GEODE specimen.", reward: 1200, req: s => s.fleet.some(p => p.role === 'GEODE') },
+    { id: "m6", title: "Cabinet Collector", desc: "Acquire a Tier V or higher specimen.", reward: 3000, req: s => s.fleet.some(p => p.tierIndex >= 4) },
+    { id: "m7", title: "Master Prepper", desc: "Hire a Tier V or higher mineralogist.", reward: 2000, req: s => s.pilots.some(p => p.tierIndex >= 4) },
+    { id: "m8", title: "Acid & Grit Drum", desc: "Stock over 25,000 Acid/Grit units.", reward: 1500, req: s => s.fuelReserve >= 25000 },
+    { id: "m9", title: "Tucson High-Roller", desc: "Amass over $100,000 in cash.", reward: 25000, req: s => s.funds >= 100000 },
+    { id: "m10", title: "Gallery Hall", desc: "Expand to 10 active specimens.", reward: 3500, req: s => s.fleet.length >= 10 },
+    { id: "m11", title: "Gavel Dropper", desc: "Sell a specimen at the Mineral Auctions.", reward: 1000, req: s => s.statAuctionsSold > 0 },
+    { id: "m12", title: "Rock Swap Trade", desc: "Sell a specimen locally.", reward: 500, req: s => s.statPlanesScrapped > 0 },
+    { id: "m13", title: "Munich & Sainte-Marie", desc: "Unlock an international show > 6,500 Miles.", reward: 5000, req: s => s.routes.some(r => r.unlocked && r.dist >= 6500) },
+    { id: "m14", title: "Board of Curators", desc: "Employ 3 or more Tier VII+ Curators.", reward: 12000, req: s => s.pilots.filter(p => p.tierIndex >= 6).length >= 3 },
+    { id: "m15", title: "Smithsonian Holotype", desc: "Acquire a Tier X World Holotype.", reward: 50000, req: s => s.fleet.some(p => p.tierIndex === 9) }
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  /* ============================================================================
+     512x512 WATERTIGHT SOLID-CORE 3D VOXEL MINERAL, GEODE & FOSSIL ENGINE
+     - Analytical Trigonometric Rock Surfaces (100% continuous, zero Swiss-cheese holes)
+     - Strict Outer-Shell Locked Geodes (18+ voxel thick solid back, roof & side walls)
+     - `solidifyVolume()` 3D Morphological Closing Pass seals any internal seams
+     - Double-Thick Crust + 5x5 Watertight Splat Renderer (Zero see-through gaps)
+     ============================================================================ */
+  class VoxelMineralEngine {
+    constructor(canvas) {
+      this.width = 512;
+      this.height = 512;
+      this.canvas = canvas || document.createElement('canvas');
+      this.canvas.width = 512;
+      this.canvas.height = 512;
+      this.ctx = this.canvas.getContext('2d');
+
+      this.grid = new Uint8Array(256 * 256 * 256);
+      this.stampGrid = new Uint16Array(256 * 256 * 256);
+      this.currentStamp = 1;
+
+      this.occupiedList = new Int32Array(900000);
+      this.occupiedCount = 0;
+
+      const MAX_SURF = 400000;
+      this.surfX = new Int16Array(MAX_SURF);
+      this.surfY = new Int16Array(MAX_SURF);
+      this.surfZ = new Int16Array(MAX_SURF);
+      this.surfColTop = new Uint32Array(MAX_SURF);
+      this.surfColLeft = new Uint32Array(MAX_SURF);
+      this.surfColRight = new Uint32Array(MAX_SURF);
+      this.surfCount = 0;
+
+      this.zBuf = new Float32Array(512 * 512);
+      this.imgData = this.ctx.createImageData(512, 512);
+      this.pixels = new Uint32Array(this.imgData.data.buffer);
+
+      this.paletteRGB = new Uint32Array(256);
+      this.materialPriority = new Uint8Array(256);
+
+      this.yaw = 0.40;
+      this.pitch = 0.25;
+      this.scale = 1.92;
+      this.seed = 2026;
+    }
+
+    initRNG(seed) {
+      this.seed = (seed >>> 0) || 2026;
+      let a = this.seed;
+      this.rand = () => {
+        let t = (a += 0x6D2B79F5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+      // Seeded phase offsets for continuous analytical 3D wave functions
+      this.p1 = this.rand() * 6.28;
+      this.p2 = this.rand() * 6.28;
+      this.p3 = this.rand() * 6.28;
+    }
+
+    // 100% Continuous C-infinity Analytical 3D Rock Wave (Never creates holes or disconnects!)
+    rockWave(x, y, z, freq = 0.08) {
+      return (
+        Math.sin(x * freq + this.p1) *
+        Math.cos(y * freq + this.p2) *
+        Math.sin(z * freq + this.p3) +
+        0.5 * Math.cos((x + z) * freq * 1.4 - y * freq + this.p1)
+      ) * 0.66;
+    }
+
+    // Deterministic surface sparkle hash (used ONLY for color shading, never for geometry culling)
+    colorHash(x, y, z) {
+      let n = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 2147483647) + this.seed;
+      n = (n ^ (n >> 13)) * 1274126177;
+      return ((n ^ (n >> 16)) >>> 0) / 4294967296;
+    }
+
+    range(min, max) { return min + this.rand() * (max - min); }
+    pick(arr) { return arr[Math.floor(this.rand() * arr.length)]; }
+
+    registerColor(idx, hex, priority) {
+      this.paletteRGB[idx] = parseInt(hex.slice(1), 16);
+      this.materialPriority[idx] = priority;
+    }
+
+    setupMineralPalettes(sp, role, tierIdx, prefixIdx = 0, originIdx = 0) {
+      this.prefixIdx = prefixIdx;
+      this.originIdx = originIdx;
+
+      let primary   = ['#0d3b4d', '#165e7a', '#2286ab', '#36b2db', '#64d4f7', '#a6ebff']; // Aquamarine
+      let secondary = ['#14452b', '#226e45', '#349962', '#4cc482', '#75ebaa', '#b0ffd4'];
+
+      if (sp.includes("Tourmaline")) {
+        primary   = ['#450a23', '#73123b', '#a31c55', '#d42b72', '#f54e94', '#ff85b8'];
+        secondary = ['#0b331c', '#145730', '#208047', '#31ab62', '#4bd482', '#7cf5ab'];
+      } else if (sp.includes("Emerald")) {
+        primary   = ['#062b16', '#0d4d28', '#17753e', '#24a359', '#38d178', '#68f7a4'];
+        secondary = ['#0d3822', '#195e3a', '#298756', '#3db576', '#5ce09b', '#94ffc7'];
+      } else if (sp.includes("Smoky") || sp.includes("Trilobite")) {
+        primary   = ['#181412', '#29231f', '#3d342e', '#544840', '#6e5e54', '#8c796c'];
+        secondary = ['#2e251d', '#47392d', '#63503f', '#826953', '#a3856a', '#c4a282'];
+      } else if (sp.includes("Topaz") || sp.includes("Citrine")) {
+        primary   = ['#451c06', '#73310b', '#a34812', '#d4651c', '#f7882f', '#ffb859'];
+        secondary = ['#593808', '#87560e', '#b87716', '#e69b22', '#ffc23b', '#ffe078'];
+      } else if (sp.includes("Amethyst") || sp.includes("Grape")) {
+        primary   = ['#1b092e', '#301152', '#491b7a', '#6729a8', '#8b42d6', '#b870ff'];
+        secondary = ['#3b1659', '#5c248a', '#8036bd', '#a852eb', '#cf7dff', '#ebd4ff'];
+      } else if (sp.includes("Pyrite") || sp.includes("Gold") || sp.includes("Ammonite")) {
+        primary   = ['#382b0c', '#594514', '#82651f', '#ad882b', '#d9ad3b', '#ffdf6b'];
+        secondary = ['#2b2416', '#473c25', '#695937', '#8f7a4d', '#b89e66', '#e3c788'];
+      } else if (sp.includes("Fluorite")) {
+        primary   = ['#1a0d36', '#2d175c', '#432487', '#5d34b5', '#7e52e0', '#a67dff'];
+        secondary = ['#0a3326', '#135942', '#1f8262', '#2eb086', '#47deac', '#78ffd1'];
+      } else if (sp.includes("Rhodochrosite") || sp.includes("Agate Geode")) {
+        primary   = ['#4a0819', '#780e29', '#a8163b', '#d92452', '#fa4774', '#ff809f'];
+        secondary = ['#5e1929', '#8c283f', '#ba3b58', '#e65577', '#ff829e', '#ffc2d1'];
+      } else if (sp.includes("Malachite")) {
+        primary   = ['#052112', '#0b3d21', '#135e33', '#1e854a', '#2eb065', '#4ce08a'];
+        secondary = ['#0f4f2b', '#1b7843', '#29a35e', '#3dd17d', '#62f5a1', '#a3ffc9'];
+      } else if (sp.includes("Azurite")) {
+        primary   = ['#061338', '#0d2261', '#16358f', '#224dbf', '#366ee8', '#6699ff'];
+        secondary = ['#09331c', '#125931', '#1d8249', '#2db065', '#47de87', '#78ffb0'];
+      } else if (sp.includes("Megalodon")) {
+        // Fossil Shark Tooth: Dark slate-blue/charcoal enamel blade + tan/brown bourlette & root!
+        primary   = ['#1c2226', '#2c353b', '#3f4b54', '#556570', '#708391', '#91a6b5'];
+        secondary = ['#3b2d1f', '#57422e', '#75593e', '#967351', '#b88f67', '#d9ad82'];
+      } else if (sp.includes("Meteorite")) {
+        primary   = ['#181c22', '#282f38', '#3c4654', '#546275', '#73859e', '#9eb2cc'];
+        secondary = ['#2e3b09', '#4d6310', '#709119', '#96c224', '#bfeb38', '#e3ff70']; // Olivine peridot gems
+      }
+
+      if (prefixIdx === 7) {
+        // Pyritized metallic gold replacement override
+        primary = ['#382b0c', '#594514', '#82651f', '#ad882b', '#d9ad3b', '#ffdf6b'];
+      }
+
+      this.isIridescent = (prefixIdx === 2 || sp.includes("Bismuth"));
+
+      // Solid Host Rock Matrix Palette (30..35)
+      let matrixCols = ['#2b2825', '#3d3934', '#524c46', '#69625a', '#827970', '#9e9489']; // Solid Granite/Limestone
+      if (originIdx === 1 || originIdx === 6 || sp.includes("Gold")) {
+        matrixCols = ['#787d82', '#91979c', '#adb4ba', '#c9d0d6', '#e3eaf0', '#f7fbff']; // Bull Quartz / Albite
+      } else if (originIdx === 3) {
+        matrixCols = ['#1e2916', '#304022', '#445930', '#5a7540', '#729452', '#8eb569']; // Skarn
+      } else if (originIdx === 5) {
+        matrixCols = ['#361e0e', '#522d15', '#703f1d', '#915326', '#b56a33', '#d98642']; // Ironstone
+      }
+
+      // 1..6: Solid Beveled Ebony Display Plinth + Brass Caliper Mount + Collector Label (Priority 7)
+      this.registerColor(1, '#0e1014', 7);
+      this.registerColor(2, '#181c24', 7);
+      this.registerColor(3, '#282f3d', 7);
+      this.registerColor(4, '#d4a838', 7);
+      this.registerColor(5, '#f2efe9', 7);
+      this.registerColor(6, '#1f2421', 7);
+
+      // 10..15: Primary Mineral / Fossil Ramp (Priority 5)
+      primary.forEach((c, i) => this.registerColor(10 + i, c, 5));
+      // 20..25: Secondary Mineral / Root / Banding Ramp (Priority 5)
+      secondary.forEach((c, i) => this.registerColor(20 + i, c, 5));
+      // 30..35: Solid Host Matrix Boulder & Outer Basalt Rind (Priority 4)
+      matrixCols.forEach((c, i) => this.registerColor(30 + i, c, 4));
+
+      // 40..49: Rainbow Oxide, Agate Fortification Bands & Specular Glints (Priority 6)
+      this.registerColor(40, '#ff3877', 6);
+      this.registerColor(41, '#ffb82b', 6);
+      this.registerColor(42, '#2bf08a', 6);
+      this.registerColor(43, '#2bb8ff', 6);
+      this.registerColor(44, '#9d4edd', 6);
+      this.registerColor(45, '#ffffff', 6); // Specular facet highlight
+      this.registerColor(46, '#e8f1f7', 6); // Agate white band
+      this.registerColor(47, '#39ff14', 6); // UV Neon accent
+      this.registerColor(48, '#7393ad', 6); // Agate chalcedony blue-grey band
+      this.registerColor(49, '#3a4d5c', 6); // Agate dark fortification band
+    }
+
+    setVoxel(x, y, z, colorIdx) {
+      const ix = x | 0, iy = y | 0, iz = z | 0;
+      if (ix < 2 || ix >= 253 || iy < 2 || iy >= 253 || iz < 2 || iz >= 253) return;
+      const idx = ix + (iz << 8) + (iy << 16);
+      if (this.stampGrid[idx] === this.currentStamp) {
+        const existing = this.grid[idx];
+        if (this.materialPriority[existing] > this.materialPriority[colorIdx]) return;
+        this.grid[idx] = colorIdx;
+      } else {
+        this.stampGrid[idx] = this.currentStamp;
+        this.grid[idx] = colorIdx;
+        if (this.occupiedCount < this.occupiedList.length) {
+          this.occupiedList[this.occupiedCount++] = idx;
+        }
+      }
+    }
+
+    /**
+     * Builds a 100% Watertight, Flat-Bottomed Solid Host Rock Boulder seated directly on the Display Plinth
+     */
+    buildPlinthAndSolidMatrix(baseY, role) {
+      const cx = 128, cz = 128;
+      const plinthRx = 68, plinthRz = 60;
+
+      // 1. Solid Beveled Ebony Display Plinth (Y = 18..36)
+      for (let y = 18; y <= 36; y++) {
+        const inset = y > 32 ? (y - 32) * 2 : 0;
+        const rx = plinthRx - inset, rz = plinthRz - inset;
+        for (let z = cz - rz; z <= cz + rz; z++) {
+          for (let x = cx - rx; x <= cx + rx; x++) {
+            const onEdge = Math.abs(x - cx) >= rx - 2 || Math.abs(z - cz) >= rz - 2;
+            this.setVoxel(x, y, z, onEdge ? 3 : (y === 36 ? 2 : 1));
+          }
+        }
+      }
+
+      // 2. Collector Locality Label Card on front bevel
+      for (let y = 21; y <= 29; y++) {
+        for (let x = cx - 24; x <= cx + 24; x++) {
+          const isInk = (y === 26 || y === 23) && Math.abs(x - cx) < 18 && (x % 3 !== 0);
+          this.setVoxel(x, y, cz + plinthRz + 1, isInk ? 6 : 5);
+        }
+      }
+
+      if (role === 'GEODE' || role === 'FOSSIL' || role === 'NATIVE_METEOR') return;
+
+      // 3. Solid Flat-Bottomed Host Rock Boulder seated flush on the plinth (Y = 37..baseY + 22)
+      const matRx = 54, matRy = 28, matRz = 48;
+      for (let y = 37; y <= baseY + 22; y++) {
+        const ny = (y - (37 + 12)) / matRy;
+        for (let z = cz - matRz; z <= cz + matRz; z++) {
+          const nz = (z - cz) / matRz;
+          for (let x = cx - matRx; x <= cx + matRx; x++) {
+            const nx = (x - cx) / matRx;
+            const wave = this.rockWave(x, y, z, 0.09) * 0.14;
+            const dist = Math.hypot(nx, Math.max(0, ny), nz) + wave;
+            if (dist <= 0.96) {
+              const shade = Math.max(0, Math.min(5, (((ny + 0.5) * 0.55 + wave * 1.5 + 0.3) * 6) | 0));
+              this.setVoxel(x, y, z, 30 + shade);
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * Inverse-Voxelized 100% Solid 3D Hexagonal Prismatic Crystal Column + 6-Sided Pyramidal Termination
+     */
+    carveHexCrystalColumn(ox, oy, oz, dirX, dirY, dirZ, length, radius, flatTop = false) {
+      const mag = Math.hypot(dirX, dirY, dirZ) || 1;
+      const dx = dirX / mag, dy = dirY / mag, dz = dirZ / mag;
+
+      let ux = -dz, uy = 0, uz = dx;
+      const uLen = Math.hypot(ux, uy, uz) || 1;
+      ux /= uLen; uz /= uLen;
+      const vx = dy * uz - dz * uy;
+      const vy = dz * ux - dx * uz;
+      const vz = dx * uy - dy * ux;
+
+      const maxR = radius * (this.prefixIdx === 5 ? 1.38 : 1.05) + 2;
+      const ex = ox + dx * length;
+      const ey = oy + dy * length;
+      const ez = oz + dz * length;
+
+      const x0 = Math.max(2, Math.floor(Math.min(ox, ex) - maxR));
+      const x1 = Math.min(253, Math.ceil(Math.max(ox, ex) + maxR));
+      const y0 = Math.max(2, Math.floor(Math.min(oy, ey) - maxR));
+      const y1 = Math.min(253, Math.ceil(Math.max(oy, ey) + maxR));
+      const z0 = Math.max(2, Math.floor(Math.min(oz, ez) - maxR));
+      const z1 = Math.min(253, Math.ceil(Math.max(oz, ez) + maxR));
+
+      for (let y = y0; y <= y1; y++) {
+        const ry = y - oy;
+        for (let z = z0; z <= z1; z++) {
+          const rz = z - oz;
+          for (let x = x0; x <= x1; x++) {
+            const rx = x - ox;
+
+            const h = rx * dx + ry * dy + rz * dz;
+            if (h < 0 || h > length) continue;
+
+            const t = h / length;
+            let curR = radius;
+            if (this.prefixIdx === 5 && t > 0.60) curR *= 1.32;
+
+            if (!flatTop && t > 0.72) {
+              curR *= Math.max(0.04, 1 - (t - 0.72) / 0.28);
+            } else if (flatTop && t > 0.92) {
+              curR *= Math.max(0.45, 1 - (t - 0.92) * 3.0);
+            }
+
+            const u = rx * ux + ry * uy + rz * uz;
+            const v = rx * vx + ry * vy + rz * vz;
+
+            const au = Math.abs(u), av = Math.abs(v);
+            const hexDist = Math.max(au, au * 0.5 + av * 0.866025);
+            if (hexDist > curR) continue;
+
+            const facetIndex = (Math.floor(((Math.atan2(v, u) + Math.PI) / (Math.PI * 2)) * 6) + 6) % 6;
+            const isOuterEdge = hexDist > curR - 1.25 && (facetIndex === 1 || facetIndex === 2);
+
+            if (isOuterEdge && (t > 0.72 || ((h | 0) % 4 === 0))) {
+              this.setVoxel(x, y, z, 45);
+              continue;
+            }
+
+            if (this.isIridescent && hexDist > curR - 1.8) {
+              this.setVoxel(x, y, z, 40 + ((facetIndex + ((h | 0) >> 3)) % 5));
+              continue;
+            }
+
+            let pal = 10;
+            if (this.prefixIdx === 4 || hexDist < curR * 0.58) {
+              if (t > 0.55 || (this.prefixIdx === 3 && Math.abs(t - 0.72) < 0.08)) pal = 20;
+            }
+            if (this.prefixIdx === 6 && hexDist > curR - 1.5 && (((h | 0) >> 2) & 1)) {
+              this.setVoxel(x, y, z, 47);
+              continue;
+            }
+
+            const facetShade = [1, 4, 5, 3, 2, 0][facetIndex];
+            this.setVoxel(x, y, z, pal + facetShade);
+          }
+        }
+      }
+    }
+
+    /**
+     * 1. PRISMATIC (Solid Hexagonal Quartz, Aquamarine, Emerald, Tourmaline & Topaz Clusters)
+     */
+    buildPrismaticCluster(sp, baseY) {
+      const cx = 128, cz = 128;
+      const flatTop = sp.includes("Aquamarine") || sp.includes("Emerald") || sp.includes("Tourmaline");
+      const numPoints = 11;
+
+      for (let i = 0; i < numPoints; i++) {
+        const isMainKing = (i === 0);
+        const yaw = i * 2.39996 + this.range(-0.14, 0.14);
+        const tilt = isMainKing ? 0.10 : this.range(0.18, 0.68);
+
+        const dx = Math.cos(yaw) * Math.sin(tilt);
+        const dy = Math.cos(tilt);
+        const dz = Math.sin(yaw) * Math.sin(tilt);
+
+        const ox = cx + (isMainKing ? -2 : Math.cos(yaw) * this.range(6, 24));
+        const oz = cz + (isMainKing ? 2 : Math.sin(yaw) * this.range(6, 20));
+        const oy = baseY - 4; // Embedded deep into the solid boulder core!
+
+        const len = isMainKing ? 138 : this.range(64, 114);
+        const rad = isMainKing ? 21 : this.range(10.5, 17.0);
+
+        this.carveHexCrystalColumn(ox, oy, oz, dx, dy, dz, len, rad, flatTop);
+      }
+    }
+
+    /**
+     * 2. GEODE (100% Solid-Wall Locked Cathedral & Agate Geode)
+     * Uses a single unified distance field `D_outer` so the wall is GUARANTEED to be 20+ voxels thick
+     * on the back, sides, roof, and floor—zero possibility of ever poking through!
+     */
+    buildCathedralGeode(sp) {
+      const cx = 128, cz = 128;
+      const botY = 37, topY = 212;
+      const h = topY - botY;
+      const cutPlaneZ = cz + 18; // Flat diamond-sawn polished front face
+
+      for (let y = botY; y <= topY; y++) {
+        const t = (y - botY) / h; // 0 = flat base on plinth -> 1 = rounded cathedral dome top
+        // Smooth cathedral arch width & depth (stays wide at the bottom, domes smoothly at top)
+        const domeCurve = Math.sin(Math.pow(t, 0.72) * Math.PI * 0.92);
+        const halfW = 18 + domeCurve * 46;
+        const halfD = 16 + domeCurve * 38;
+
+        // Vertical distance from roof/floor so the top roof and bottom floor are 20+ voxels solid!
+        const vertMargin = Math.max(0, (t - 0.84) / 0.16, (0.12 - t) / 0.12);
+
+        for (let z = Math.floor(cz - halfD - 6); z <= cutPlaneZ; z++) {
+          for (let x = Math.floor(cx - halfW - 6); x <= Math.ceil(cx + halfW + 6); x++) {
+            const nx = (x - cx) / halfW;
+            const nz = (z - (cz - 4)) / halfD;
+            const wave = this.rockWave(x, y, z, 0.08) * 0.06;
+
+            // Unified 3D Boulder Distance Field `D` (0 at center -> 1.0 at outer basalt skin)
+            const D = Math.hypot(nx, nz, vertMargin * 0.95) + wave;
+            if (D > 1.0) continue;
+
+            // Hollow interior cave ONLY exists where D < 0.62 AND in the front half (z > cz - 14)
+            // Because D >= 0.62 is ALWAYS solid, the geode wall is guaranteed 38% thick all the way around!
+            const inCaveZone = (z > cz - 14) && (t > 0.14 && t < 0.86);
+            if (inCaveZone && D < 0.56) continue;
+
+            // Layer 1: Solid Dark Basalt Outer Boulder Rind (D >= 0.86 or bottom base)
+            if (D >= 0.86 || y <= botY + 5) {
+              const rockShade = Math.max(0, Math.min(5, (((1 - D) * 18 + (nx + 1) * 1.5)) | 0));
+              this.setVoxel(x, y, z, 30 + rockShade);
+            }
+            // Layer 2: Polished Banded Agate Fortification Rind (0.72 <= D < 0.86)
+            else if (D >= 0.72) {
+              const bandRing = Math.floor((D - 0.72) * 55) % 3;
+              this.setVoxel(x, y, z, bandRing === 0 ? 46 : (bandRing === 1 ? 48 : 49));
+            }
+            // Layer 3: Solid Druzy Amethyst / Citrine Crystal Wall + 3D Pyramidal Teeth (0.56 <= D < 0.72)
+            else {
+              // Angular 3D pyramidal crystal teeth protruding inward from D=0.66 down to D=0.56
+              const ang = Math.atan2(y - 120, x - cx);
+              const toothGrid = Math.sin(ang * 18) * Math.sin(y * 0.35 + z * 0.35);
+              const toothTipD = 0.64 - Math.max(0, toothGrid) * 0.08;
+              if (inCaveZone && D < toothTipD) continue;
+
+              const isTip = inCaveZone && D < toothTipD + 0.025;
+              if (isTip && this.colorHash(x, y, z) > 0.45) {
+                this.setVoxel(x, y, z, 45); // Sparkling crystal termination tip
+              } else {
+                const cShade = Math.max(0, Math.min(5, (((0.72 - D) * 32 + (toothGrid + 1) * 1.2)) | 0));
+                this.setVoxel(x, y, z, 10 + cShade);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * 3. CUBIC (100% Solid Interlocking Pyrite Cubes, Fluorite Cubes, Rhodochrosite & Hopper Bismuth)
+     */
+    buildCubicCluster(sp, baseY) {
+      const cx = 128, cz = 128;
+      const isBismuth = sp.includes("Bismuth") || this.isIridescent;
+      const cubes = 9;
+
+      for (let c = 0; c < cubes; c++) {
+        const isKing = (c === 0);
+        const halfSize = isKing ? 30 : this.range(15, 24);
+        const boxX = cx + (isKing ? 0 : this.range(-30, 30));
+        const boxY = baseY + (isKing ? 28 : this.range(6, 26));
+        const boxZ = cz + (isKing ? 2 : this.range(-22, 24));
+
+        const aY = c * 1.1 + 0.35;
+        const aX = (c % 2 === 0 ? 0.28 : -0.24);
+        const cosY = Math.cos(aY), sinY = Math.sin(aY);
+        const cosX = Math.cos(aX), sinX = Math.sin(aX);
+
+        const bound = Math.ceil(halfSize * 1.45);
+        for (let dy = -bound; dy <= bound; dy++) {
+          for (let dz = -bound; dz <= bound; dz++) {
+            for (let dx = -bound; dx <= bound; dx++) {
+              const rx = dx * cosY - dz * sinY;
+              const rz1 = dx * sinY + dz * cosY;
+              const ly = dy * cosX - rz1 * sinX;
+              const lz = dy * sinX + rz1 * cosX;
+              const lx = rx;
+
+              const ax = Math.abs(lx), ay = Math.abs(ly), az = Math.abs(lz);
+              const maxAxis = Math.max(ax, ay, az);
+              if (maxAxis > halfSize) continue;
+
+              // Hopper Bismuth: 100% solid interior with shallow 3-voxel stepped rainbow terraces on the outer faces
+              if (isBismuth) {
+                const minTwo = Math.min(Math.max(ax, ay), Math.max(ay, az), Math.max(ax, az));
+                const stepDepth = halfSize - maxAxis;
+                if (maxAxis > halfSize - 6 && minTwo < halfSize - 4 - stepDepth && stepDepth > 1.5) continue;
+                const terraceCol = 40 + (Math.floor(maxAxis * 0.45 + c) % 5);
+                this.setVoxel(boxX + dx, boxY + dy, boxZ + dz, terraceCol);
+                continue;
+              }
+
+              const edgeCount = (ax > halfSize - 1.6 ? 1 : 0) + (ay > halfSize - 1.6 ? 1 : 0) + (az > halfSize - 1.6 ? 1 : 0);
+              if (edgeCount >= 2) {
+                this.setVoxel(boxX + dx, boxY + dy, boxZ + dz, 45);
+                continue;
+              }
+
+              const isCore = maxAxis < halfSize * 0.58;
+              const pal = isCore ? 20 : 10;
+              const faceShade = ax === maxAxis ? 3 : (ay === maxAxis ? 5 : 4);
+              this.setVoxel(boxX + dx, boxY + dy, boxZ + dz, pal + faceShade);
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * 4. BOTRYOIDAL (100% Fused Solid Velvet Malachite, Grape Agate & Azurite Domes)
+     */
+    buildBotryoidalCluster(sp, baseY) {
+      const cx = 128, cz = 128;
+
+      // Step 1: Solid inner mineral core so there are NEVER gaps between the outer botryoidal domes!
+      for (let y = baseY; y <= baseY + 58; y++) {
+        const t = (y - baseY) / 58;
+        const r = 42 * (1 - t * 0.45);
+        for (let z = cz - 42; z <= cz + 42; z++) {
+          for (let x = cx - 42; x <= cx + 42; x++) {
+            if (Math.hypot(x - cx, z - cz) <= r) {
+              this.setVoxel(x, y, z, 11);
+            }
+          }
+        }
+      }
+
+      // Step 2: Overlapping Concentric Botryoidal Domes fused onto the solid core
+      const isGrape = sp.includes("Grape");
+      const numSpheres = isGrape ? 52 : 32;
+
+      for (let i = 0; i < numSpheres; i++) {
+        const t = i / numSpheres;
+        const ang = i * 2.39996;
+        const dist = (1 - t * 0.62) * 38;
+        const sx = cx + Math.cos(ang) * dist;
+        const sz = cz + Math.sin(ang) * (dist * 0.85);
+        const sy = baseY + 10 + t * 62 + Math.sin(i * 1.7) * 5;
+        const rad = isGrape ? this.range(12, 16) : this.range(18, 26);
+        const rInt = Math.ceil(rad);
+        const rSq = rad * rad;
+
+        for (let dy = -rInt; dy <= rInt; dy++) {
+          for (let dz = -rInt; dz <= rInt; dz++) {
+            for (let dx = -rInt; dx <= rInt; dx++) {
+              const d2 = dx * dx + dy * dy + dz * dz;
+              if (d2 > rSq) continue;
+              const d = Math.sqrt(d2);
+              const ring = Math.floor(d * 0.55) & 1;
+              const pal = ring ? 20 : 10;
+              const shade = Math.max(0, Math.min(5, (((dy / rad + 1) * 0.45 + (d / rad) * 0.2) * 6) | 0));
+              this.setVoxel(sx + dx, sy + dy, sz + dz, pal + shade);
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * 5. FOSSIL (100% Solid 3D Ammonite Spirals, Megalodon Shark Teeth & Trilobites on Solid Matrix Slabs)
+     */
+    buildSolidFossil(sp) {
+      const cx = 128, cz = 128;
+      const centerY = 114;
+
+      // Step 1: Carve a heavy, 100% solid Limestone / Shale Matrix Slab seated on the plinth (Y = 37..188)
+      const slabRx = 56, slabRy = 74, slabThick = 16;
+      for (let y = 37; y <= 188; y++) {
+        const ny = (y - centerY) / slabRy;
+        for (let x = cx - slabRx - 4; x <= cx + slabRx + 4; x++) {
+          const nx = (x - cx) / slabRx;
+          const wave = this.rockWave(x, y, cz, 0.07) * 0.10;
+          const d = Math.hypot(nx, Math.max(-0.95, ny)) + wave;
+          if (d > 1.0) continue;
+
+          for (let z = cz - slabThick; z <= cz + 4; z++) {
+            const shade = Math.max(0, Math.min(5, (((1 - d) * 3.5 + (ny + 1) * 1.2)) | 0));
+            this.setVoxel(x, y, z, 30 + shade);
+          }
+        }
+      }
+
+      // Step 2: Sculpt the High-Relief 3D Fossil embedded on the front of the solid slab (z = cz + 2..24)
+      if (sp.includes("Megalodon")) {
+        // Giant Serrated Megalodon Shark Tooth in Matrix (Root arch at top, triangular serrated blade pointing down)
+        const toothTopY = 162, toothBotY = 58;
+        for (let y = toothBotY; y <= toothTopY; y++) {
+          const t = (y - toothBotY) / (toothTopY - toothBotY); // 0 = sharp apex tip -> 1 = root lobes
+          const halfW = Math.pow(t, 0.72) * 42 + 1.5;
+          const isRoot = t > 0.74 && (t - Math.abs(0) * 0.2 > 0.74);
+
+          for (let dx = -halfW; dx <= halfW; dx++) {
+            const nx = Math.abs(dx) / halfW;
+            // Bilobed root notch at top center
+            if (t > 0.88 && Math.abs(dx) < (t - 0.88) * 110) continue;
+
+            const isRootZone = (t > 0.72 + (1 - nx) * 0.08);
+            const isBourlette = !isRootZone && (t > 0.65 + (1 - nx) * 0.08);
+            const isSerratedEdge = !isRootZone && nx > 0.88 && (y & 1);
+
+            const domeThick = Math.cos(nx * Math.PI * 0.48) * (isRootZone ? 16 : 13);
+            for (let dz = 0; dz <= domeThick; dz++) {
+              const pal = isRootZone ? 20 : (isBourlette ? 10 : 10);
+              const shade = isSerratedEdge ? 5 : (isBourlette ? 0 : Math.min(5, ((dz / 13) * 5 + 1) | 0));
+              this.setVoxel(cx + dx, y, cz + 3 + dz, pal + shade);
+            }
+          }
+        }
+      } else if (sp.includes("Trilobite")) {
+        // 3D Segmented Devonian Trilobite (Cephalon head shield + 9 Thoracic pleurae + Pygidium tail)
+        for (let dy = -44; dy <= 44; dy++) {
+          const ny = dy / 44; // -1 = tail -> +1 = head shield
+          const bodyW = Math.cos(ny * 1.15) * 34;
+          for (let dx = -bodyW; dx <= bodyW; dx++) {
+            const nx = dx / bodyW;
+            // 3 longitudinal lobes (Central Axial Lobe + Left/Right Pleural Lobes)
+            const lobe = Math.abs(nx) < 0.34 ? 1.25 : Math.cos((Math.abs(nx) - 0.34) / 0.66 * Math.PI * 0.5);
+            // Transverse rib segments along thorax (ny between -0.6 and +0.45)
+            const rib = (ny > -0.65 && ny < 0.45) ? (Math.sin(dy * 0.85) > -0.35 ? 1.0 : 0.65) : 1.0;
+            const h = Math.max(2, lobe * rib * 15);
+
+            for (let dz = 0; dz <= h; dz++) {
+              const shade = Math.max(0, Math.min(5, ((dz / 15) * 5) | 0));
+              this.setVoxel(cx + dx, centerY + dy, cz + 3 + dz, 10 + shade);
+            }
+          }
+        }
+      } else {
+        // Golden Pyritized Ammonite Logarithmic Spiral with Ribbed Suture Chambers!
+        const turns = 200;
+        for (let i = 0; i <= turns; i++) {
+          const t = i / turns; // 0 = inner umbilicus -> 1 = outer body chamber
+          const theta = t * Math.PI * 5.2;
+          const orbitR = 4 + Math.pow(t, 1.35) * 38;
+          const tubeR = 3.5 + Math.pow(t, 1.25) * 14.5;
+
+          const sx = cx + Math.cos(theta) * orbitR;
+          const sy = centerY + Math.sin(theta) * orbitR;
+          const isRib = (i % 5 === 0) ? 1.12 : 0.96;
+          const r = tubeR * isRib;
+          const rInt = Math.ceil(r);
+
+          for (let dy = -rInt; dy <= rInt; dy++) {
+            for (let dx = -rInt; dx <= rInt; dx++) {
+              const d2 = dx * dx + dy * dy;
+              if (d2 > r * r) continue;
+              const zH = Math.sqrt(r * r - d2);
+              for (let dz = 0; dz <= zH + 4; dz++) {
+                const pal = (i % 5 === 0) ? 10 : 20;
+                const shade = Math.max(0, Math.min(5, (((dz / (r + 2)) * 5) + (dy > 0 ? 1 : 0)) | 0));
+                this.setVoxel(sx + dx, sy + dy, cz + 2 + dz, pal + shade);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * 6. NATIVE_METEOR (100% Solid Esquel Pallasite Meteorite Block OR Crystalline Gold-in-Quartz Boulder)
+     */
+    buildNativeOrMeteorite(sp) {
+      const cx = 128, cz = 128;
+      const centerY = 112;
+
+      const slabRx = 54, slabRy = 68, slabThick = 18;
+      for (let y = 37; y <= 184; y++) {
+        const dy = y - centerY;
+        const ny = dy / slabRy;
+        for (let x = cx - slabRx - 2; x <= cx + slabRx + 2; x++) {
+          const dx = x - cx;
+          const nx = dx / slabRx;
+          const wave = this.rockWave(x, y, cz, 0.08) * 0.10;
+          const d = Math.hypot(nx, Math.max(-0.95, ny)) + wave;
+          if (d > 1.0) continue;
+
+          if (sp.includes("Meteorite")) {
+            const cellX = Math.sin(dx * 0.22 + dy * 0.11);
+            const cellY = Math.cos(dy * 0.22 - dx * 0.14);
+            const isOlivineGem = (cellX * cellY) > 0.28 && d < 0.84;
+            const widBand = ((Math.floor(dx * 0.45 + dy * 0.26) ^ Math.floor(dx * 0.45 - dy * 0.26)) & 1);
+
+            for (let dz = -slabThick; dz <= slabThick; dz++) {
+              if (d > 0.88) {
+                this.setVoxel(x, y, cz + dz, 30);
+              } else if (isOlivineGem) {
+                const gemShade = Math.max(0, Math.min(5, (((cellX * cellY - 0.28) * 8) | 0)));
+                this.setVoxel(x, y, cz + dz, 20 + gemShade);
+              } else {
+                this.setVoxel(x, y, cz + dz, 12 + widBand * 2);
+              }
+            }
+          } else {
+            // Solid Milky Bull-Quartz Boulder with 3D Crystalline Gold Veins erupting in relief!
+            const vein = Math.sin(dx * 0.14 + Math.sin(dy * 0.12) * 2.5) * Math.cos(dy * 0.11 - dx * 0.08);
+            const isGoldVein = vein > 0.36 && d < 0.88;
+            const maxZ = isGoldVein ? slabThick + 8 : slabThick;
+
+            for (let dz = -slabThick; dz <= maxZ; dz++) {
+              if (isGoldVein && dz >= slabThick - 2) {
+                const gl = this.colorHash(x, y, cz + dz);
+                this.setVoxel(x, y, cz + dz, gl > 0.72 ? 45 : (12 + Math.min(3, (gl * 4) | 0)));
+              } else {
+                const qShade = Math.max(0, Math.min(5, (((1 - d) * 3 + (ny + 1) * 1.5)) | 0));
+                this.setVoxel(x, y, cz + dz, 30 + qShade);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * 3D Morphological Closing Pass (`solidifyVolume`):
+     * Scans the occupied volume and seals any internal air pockets or 1-voxel gaps
+     * surrounded by >= 4 solid face neighbors so every rock & crystal is 100% solid!
+     */
+    solidifyVolume() {
+      const stampGrid = this.stampGrid;
+      const grid = this.grid;
+      const stamp = this.currentStamp;
+      const count = this.occupiedCount;
+      const list = this.occupiedList;
+
+      for (let i = 0; i < count; i++) {
+        const idx = list[i];
+        const x = idx & 255;
+        const z = (idx >> 8) & 255;
+        const y = (idx >> 16) & 255;
+        if (x < 3 || x > 252 || y < 3 || y > 252 || z < 3 || z > 252) continue;
+
+        const mat = grid[idx];
+        // Check immediate neighbors for tiny 1-voxel gaps between two solid voxels
+        const offsets = [1, -1, 256, -256, 65536, -65536];
+        for (let k = 0; k < 6; k++) {
+          const nIdx = idx + offsets[k];
+          if (stampGrid[nIdx] !== stamp) {
+            // Count how many solid neighbors surround this air gap
+            let solidNeighbors = 0;
+            if (stampGrid[nIdx + 1] === stamp) solidNeighbors++;
+            if (stampGrid[nIdx - 1] === stamp) solidNeighbors++;
+            if (stampGrid[nIdx + 256] === stamp) solidNeighbors++;
+            if (stampGrid[nIdx - 256] === stamp) solidNeighbors++;
+            if (stampGrid[nIdx + 65536] === stamp) solidNeighbors++;
+            if (stampGrid[nIdx - 65536] === stamp) solidNeighbors++;
+
+            if (solidNeighbors >= 4) {
+              stampGrid[nIdx] = stamp;
+              grid[nIdx] = mat;
+              if (this.occupiedCount < list.length) {
+                list[this.occupiedCount++] = nIdx;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    generate(seedInt, role, tierIdx, sp, prefixIdx = 0, originIdx = 0) {
+      this.initRNG(seedInt);
+
+      this.currentStamp++;
+      if (this.currentStamp >= 65530) {
+        this.stampGrid.fill(0);
+        this.currentStamp = 1;
+      }
+      this.occupiedCount = 0;
+
+      this.setupMineralPalettes(sp, role, tierIdx, prefixIdx, originIdx);
+
+      const baseY = 58;
+      this.buildPlinthAndSolidMatrix(baseY, role);
+
+      if (role === 'GEODE') this.buildCathedralGeode(sp);
+      else if (role === 'CUBIC') this.buildCubicCluster(sp, baseY);
+      else if (role === 'BOTRYOIDAL') this.buildBotryoidalCluster(sp, baseY);
+      else if (role === 'FOSSIL') this.buildSolidFossil(sp);
+      else if (role === 'NATIVE_METEOR') this.buildNativeOrMeteorite(sp);
+      else this.buildPrismaticCluster(sp, baseY);
+
+      // Run 3D solidification pass to seal any internal cracks or diagonal seams!
+      this.solidifyVolume();
+
+      this.bakeSurfaceVoxels();
+      this.render();
+      return this.canvas.toDataURL('image/png');
+    }
+
+    bakeSurfaceVoxels() {
+      const grid = this.grid;
+      const stampGrid = this.stampGrid;
+      const stamp = this.currentStamp;
+      const count = this.occupiedCount;
+      const list = this.occupiedList;
+      const sunX = -0.45, sunY = 0.78, sunZ = 0.42;
+
+      let sIdx = 0;
+      const maxSurf = this.surfX.length;
+
+      for (let i = 0; i < count; i++) {
+        const idx = list[i];
+        const mat = grid[idx];
+        const x = idx & 255;
+        const z = (idx >> 8) & 255;
+        const y = (idx >> 16) & 255;
+        if (x < 3 || x > 252 || y < 3 || y > 252 || z < 3 || z > 252) continue;
+
+        const expTop   = stampGrid[idx + 65536] !== stamp;
+        const expBot   = stampGrid[idx - 65536] !== stamp;
+        const expLeft  = stampGrid[idx - 1] !== stamp;
+        const expRight = stampGrid[idx + 1] !== stamp;
+        const expFront = stampGrid[idx + 256] !== stamp;
+        const expBack  = stampGrid[idx - 256] !== stamp;
+
+        // Also retain the 2nd inner layer (2-voxel-thick solid crust) so diagonal rotations NEVER leak background!
+        let isCrust = expTop || expBot || expLeft || expRight || expFront || expBack;
+        if (!isCrust) {
+          isCrust = (
+            stampGrid[idx + 131072] !== stamp || stampGrid[idx - 131072] !== stamp ||
+            stampGrid[idx + 2] !== stamp      || stampGrid[idx - 2] !== stamp ||
+            stampGrid[idx + 512] !== stamp    || stampGrid[idx - 512] !== stamp
+          );
+        }
+        if (!isCrust) continue;
+        if (sIdx >= maxSurf) break;
+
+        let occ = 0;
+        if (!expTop) occ += 2;
+        if (!expBot) occ += 2;
+        if (!expLeft) occ += 2;
+        if (!expRight) occ += 2;
+        if (!expFront) occ += 2;
+        if (!expBack) occ += 2;
+        const ao = 1.12 - (occ / 12) * 0.44;
+
+        let inShadow = false;
+        let srx = x + sunX * 2.5, sry = y + sunY * 2.5, srz = z + sunZ * 2.5;
+        for (let step = 0; step < 16; step++) {
+          const ix = srx | 0, iy = sry | 0, iz = srz | 0;
+          if (ix <= 0 || ix >= 255 || iy >= 255 || iz <= 0 || iz >= 255) break;
+          if (stampGrid[ix + (iz << 8) + (iy << 16)] === stamp) {
+            inShadow = true;
+            break;
+          }
+          srx += sunX * 2.6; sry += sunY * 2.6; srz += sunZ * 2.6;
+        }
+
+        let dirLight = 0.88;
+        if (expTop) dirLight += 0.25;
+        if (expLeft) dirLight += 0.09;
+        if (expRight) dirLight -= 0.10;
+
+        const isSpecular = (mat >= 40 && mat <= 47);
+        const totalLight = isSpecular
+          ? 1.35
+          : Math.max(0.28, Math.min(1.36, ao * dirLight * (inShadow ? 0.64 : 1.10)));
+
+        const baseRGB = this.paletteRGB[mat];
+        const r = (baseRGB >> 16) & 255;
+        const g = (baseRGB >> 8) & 255;
+        const b = baseRGB & 255;
+
+        const mTop = totalLight * 1.08;
+        const mLeft = totalLight * 0.92;
+        const mRight = totalLight * 0.76;
+
+        this.surfX[sIdx] = x - 128;
+        this.surfY[sIdx] = y - 108;
+        this.surfZ[sIdx] = z - 128;
+        this.surfColTop[sIdx]   = (255 << 24) | (Math.min(255, (b * mTop) | 0) << 16)   | (Math.min(255, (g * mTop) | 0) << 8)   | Math.min(255, (r * mTop) | 0);
+        this.surfColLeft[sIdx]  = (255 << 24) | (Math.min(255, (b * mLeft) | 0) << 16)  | (Math.min(255, (g * mLeft) | 0) << 8)  | Math.min(255, (r * mLeft) | 0);
+        this.surfColRight[sIdx] = (255 << 24) | (Math.min(255, (b * mRight) | 0) << 16) | (Math.min(255, (g * mRight) | 0) << 8) | Math.min(255, (r * mRight) | 0);
+        sIdx++;
+      }
+      this.surfCount = sIdx;
+    }
+
+    /**
+     * Watertight 5x5 Voxel Block Splat Renderer (100% solid coverage at any 3D angle!)
+     */
+    render(targetCanvas = null) {
+      const W = 512, H = 512;
+      const zBuf = this.zBuf;
+      const pixels = this.pixels;
+
+      zBuf.fill(1e9);
+
+      for (let py = 0; py < H; py++) {
+        const rowOff = py * W;
+        const dy = py - 245;
+        for (let px = 0; px < W; px++) {
+          const dx = px - 256;
+          const d = Math.min(1, Math.hypot(dx, dy) / 340);
+          const v = (24 * (1 - d) + 6 * d) | 0;
+          pixels[rowOff + px] = (255 << 24) | ((v + 2) << 16) | ((v + 2) << 8) | v;
+        }
+      }
+
+      const cosY = Math.cos(this.yaw), sinY = Math.sin(this.yaw);
+      const cosP = Math.cos(this.pitch), sinP = Math.sin(this.pitch);
+      const scale = this.scale;
+
+      const count = this.surfCount;
+      const sxArr = this.surfX, syArr = this.surfY, szArr = this.surfZ;
+      const cTop = this.surfColTop, cLeft = this.surfColLeft, cRight = this.surfColRight;
+
+      for (let i = 0; i < count; i++) {
+        const vx = sxArr[i], vy = syArr[i], vz = szArr[i];
+
+        const rx = vx * cosY - vz * sinY;
+        const rz1 = vx * sinY + vz * cosY;
+        const ry = vy * cosP - rz1 * sinP;
+        const depth = vy * sinP + rz1 * cosP;
+
+        const sx = (256 + rx * scale) | 0;
+        const sy = (274 - ry * scale) | 0;
+        if (sx < 3 || sx >= 508 || sy < 3 || sy >= 508) continue;
+
+        const zVal = -depth;
+        const topC = cTop[i], leftC = cLeft[i], rightC = cRight[i];
+
+        for (let dy = -2; dy <= 2; dy++) {
+          const rowIdx = (sy + dy) * W;
+          for (let dx = -2; dx <= 2; dx++) {
+            const pIdx = rowIdx + sx + dx;
+            if (zVal < zBuf[pIdx]) {
+              zBuf[pIdx] = zVal;
+              pixels[pIdx] = dy <= -1 ? topC : (dx <= 0 ? leftC : rightC);
+            }
+          }
+        }
+      }
+
+      const ctx = targetCanvas ? targetCanvas.getContext('2d') : this.ctx;
+      ctx.putImageData(this.imgData, 0, 0);
+    }
+  }
+
+  const _sharedMineralEngine = new VoxelMineralEngine();
+  const _mineralDataURLCache = new Map();
+
+  function generateBonsaiImage(seedInt, role, tierIdx, sp, prefixIdx = 0, originIdx = 0) {
+    const key = `${seedInt}_${role}_${tierIdx}_${sp}_${prefixIdx}_${originIdx}`;
+    let cached = _mineralDataURLCache.get(key);
+    if (cached) return cached;
+
+    _sharedMineralEngine.yaw = 0.40;
+    _sharedMineralEngine.pitch = 0.25;
+    const dataUrl = _sharedMineralEngine.generate(seedInt, role, tierIdx, sp, prefixIdx, originIdx);
+    if (_mineralDataURLCache.size > 160) {
+      const oldest = _mineralDataURLCache.keys().next().value;
+      _mineralDataURLCache.delete(oldest);
+    }
+    _mineralDataURLCache.set(key, dataUrl);
+    return dataUrl;
+  }
+
+  function ensureTreeImage(p) {
+    if (!p.imgData) {
+      const sp = TREE_SPECIES[p.mIdx] || "Aquamarine Beryl";
+      p.imgData = generateBonsaiImage(
+        p.seedInt,
+        p.role,
+        p.tierIndex ?? p.tierIdx ?? 0,
+        sp,
+        p.pIdx ?? 0,
+        p.bIdx ?? 0
+      );
+    }
+    return p.imgData;
+  }
+
+  /* ================= 60 FPS 3D MINERAL INSPECTOR MODAL ================= */
+  const inspectCanvas = $('inspect-canvas');
+  let inspectDragging = false, inspLastX = 0, inspLastY = 0;
+
+  function openInspectModal(seedInt, role, tierIdx, mIdx, pIdx, bIdx, name) {
+    const sp = TREE_SPECIES[mIdx] || "Aquamarine Beryl";
+    const lusterName = TREE_PREFIXES[pIdx ?? 0] || "Natural";
+    const matrixName = TREE_ORIGINS[bIdx ?? 0] || "Pegmatite-Matrix";
+    $('modal-title').innerText = name;
+    $('modal-sub').innerText = `${lusterName} • ${matrixName} // Habit: ${role}`;
+    $('voxel-modal').classList.add('open');
+
+    _sharedMineralEngine.yaw = 0.40;
+    _sharedMineralEngine.pitch = 0.25;
+    _sharedMineralEngine.generate(seedInt, role, tierIdx, sp, pIdx ?? 0, bIdx ?? 0);
+    _sharedMineralEngine.render(inspectCanvas);
+  }
+
+  function closeInspectModal() {
+    $('voxel-modal').classList.remove('open');
+  }
+
+  inspectCanvas.addEventListener('pointerdown', (e) => {
+    inspectDragging = true; inspLastX = e.clientX; inspLastY = e.clientY;
+    inspectCanvas.setPointerCapture(e.pointerId);
+  });
+  inspectCanvas.addEventListener('pointermove', (e) => {
+    if (!inspectDragging) return;
+    _sharedMineralEngine.yaw = ((_sharedMineralEngine.yaw + (e.clientX - inspLastX) * 0.012 + Math.PI) % (Math.PI * 2)) - Math.PI;
+    _sharedMineralEngine.pitch = Math.max(-0.15, Math.min(0.80, _sharedMineralEngine.pitch + (e.clientY - inspLastY) * 0.008));
+    inspLastX = e.clientX; inspLastY = e.clientY;
+    _sharedMineralEngine.render(inspectCanvas);
+  });
+  inspectCanvas.addEventListener('pointerup', () => { inspectDragging = false; });
+
+  /* ================= STATE (REALISTIC STARTING CASH & SUPPLY!) ================= */
+  let State = {
+    funds: 500,          // Realistic $500 Rockhound starting budget
+    fuelReserve: 1000,   // Acid/Grit Prep Units
+    fuelSpotPrice: 0.25, // $0.25 per prep unit
+    buyMode: 1, 
+    sortHangarMode: 'val',
+    filterHangarRole: 'ALL',
+    filterHangarTier: 'ALL',
+    sortPilotsMode: 'val',
+    filterPilotTier: 'ALL',
+    filterRouteCat: 'ALL',
+    fleet: [], pilots: [], routes: [], auctions: [], marketCars: [],
+    gallery: [], 
+    marketTimer: 10.0,
+    upgrades: { mkt: 0, eng: 0 },
+    automation: { autoDispatch: false, autoMRO: false, autoRefuel: false },
+    claimedMilestones: [],
+    sideMissions: [],
+    statAuctionsSold: 0,
+    statPlanesScrapped: 0
+  };
+  let globalInterval = null;
+  let needsFleetRender = false;
+
+  /* ================= UTILITY & BASE36 ================= */
+  function fmt(n) {
+    if (n >= 1e12) return (n / 1e12).toFixed(2) + "T";
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+    if (n >= 1e4) return (n / 1e3).toFixed(1) + "K";
+    return Math.floor(n).toLocaleString();
+  }
+  function toast(msg) {
+    const r = $('toast-rack'); const e = document.createElement('div');
+    e.className = 'toast'; e.innerHTML = msg; r.appendChild(e);
+    setTimeout(() => e.remove(), 2800);
+  }
+  function updateHUD() {
+    if($('hud-funds')) $('hud-funds').innerText = `$${fmt(State.funds)}`;
+    if($('hud-fleet-count')) $('hud-fleet-count').innerText = State.fleet.length;
+    if($('hud-pilot-count')) $('hud-pilot-count').innerText = State.pilots.length;
+    if($('hud-fuel')) $('hud-fuel').innerText = fmt(State.fuelReserve);
+  }
+  
+  function saveGame() { 
+    let s = JSON.parse(JSON.stringify(State));
+    s.fleet.forEach(p => delete p.imgData);
+    s.marketCars.forEach(p => delete p.imgData);
+    s.gallery.forEach(g => delete g.imgData);
+    s.auctions.forEach(a => { if(a.item.imgData) delete a.item.imgData; });
+    localStorage.setItem('crystalSyndicateV3', JSON.stringify(s)); 
+    toast("Collection Saved."); 
+  }
+  
+  function loadGame() {
+    let s = localStorage.getItem('crystalSyndicateV3') || localStorage.getItem('crystalSyndicateV2') || localStorage.getItem('crystalSyndicateV1');
+    if (s) {
+      State = JSON.parse(s);
+      if(!State.gallery) State.gallery = [];
+      if(!State.routes || State.routes.length < 400) State.routes = generateRoutes();
+      State.fleet.forEach(p => { p.status = 'READY'; p.flightEnd = 0; p.flightStart = 0; });
+      updateHUD(); setTab('market');
+      toast("Collection Restored.");
+    } else {
+      toast("No saved collection found.");
+    }
+  }
+
+  function setBuyMode(val) {
+      State.buyMode = val;
+      ['buy-1','buy-0.25','buy-0.5','buy-1.0'].forEach(id => { if($(id)) $(id).classList.remove('active'); });
+      let sel = val===1?'buy-1':val===0.25?'buy-0.25':val===0.5?'buy-0.5':'buy-1.0';
+      if($(sel)) $(sel).classList.add('active');
+  }
+
+  /* BASE36 FOR GEOLOGISTS */
+  function exportCourier(uid) {
+    let p = State.pilots.find(x => x.uid===uid); if(!p) return;
+    let codeInt = p.fIdx * 160 + p.lIdx * 8 + p.cIdx;
+    prompt("Copy Geologist Trade Code:", "GEO-" + codeInt.toString(36).toUpperCase());
+  }
+  function importCourier() {
+    let str = prompt("Enter Geologist Trade Code (GEO-XXX):"); if(!str) return;
+    str = str.replace('GEO-', '').trim();
+    let codeInt = parseInt(str, 36); if(isNaN(codeInt) || codeInt < 0) { toast("Invalid code."); return; }
+    let cIdx = codeInt % 8; codeInt = Math.floor(codeInt / 8);
+    let lIdx = codeInt % 20; codeInt = Math.floor(codeInt / 20);
+    let fIdx = codeInt % 20;
+    let tIdx = Math.floor(Math.random() * 10);
+    let bIdx = Math.floor(Math.random() * 4);
+    State.pilots.push(hireCourier(fIdx, lIdx, cIdx, tIdx, bIdx)); 
+    updateHUD(); renderPilots(); toast("Geologist hired via Trade Code!");
+  }
+
+  /* BASE36 FOR MINERAL SPECIMENS */
+  function exportStrain(uid) {
+    let p = State.fleet.find(x => x.uid===uid); if(!p) return;
+    let codeInt = p.pIdx * 960 + p.bIdx * 120 + p.mIdx * 6 + p.rIdx;
+    prompt("Copy Specimen Trade Code:", "MIN-" + codeInt.toString(36).toUpperCase());
+  }
+  function importStrain() {
+    let str = prompt("Enter Specimen Trade Code (MIN-XXX):"); if(!str) return;
+    str = str.replace('MIN-', '').trim();
+    let codeInt = parseInt(str, 36); if(isNaN(codeInt) || codeInt < 0) { toast("Invalid code."); return; }
+    let rIdx = codeInt % 6; codeInt = Math.floor(codeInt / 6);
+    let mIdx = codeInt % 20; codeInt = Math.floor(codeInt / 20);
+    let bIdx = codeInt % 8; codeInt = Math.floor(codeInt / 8);
+    let pIdx = codeInt % 10;
+    let tIdx = Math.floor(Math.random() * 10);
+    
+    let tD = TIERS[tIdx];
+    let val = Math.floor(tD.baseVal * 1.0); 
+    let cost = Math.max(10, Math.floor(val * 0.8)); 
+    let cap = Math.floor(15 + (tIdx * 85));
+    let rnge = Math.floor(1000 + (tIdx * 900));
+    let burn = Math.floor(4 + (tIdx * 3));
+    let seedInt = (pIdx * 960 + bIdx * 120 + mIdx * 6 + rIdx) * 31 + tIdx;
+    let sp = TREE_SPECIES[mIdx];
+    let role = TREE_STYLES[rIdx % TREE_STYLES.length];
+
+    let importedMineral = {
+      uid: 'M' + Math.floor(100+Math.random()*899) + 'XL',
+      pIdx, bIdx, mIdx, rIdx, tierIndex: tIdx,
+      seedInt: seedInt,
+      imgData: generateBonsaiImage(seedInt, role, tIdx, sp, pIdx, bIdx),
+      name: `${TREE_PREFIXES[pIdx]} ${TREE_ORIGINS[bIdx]} ${sp}`,
+      role: role, tierName: tD.name, tierColor: tD.color,
+      value: val, cost: cost, capacity: cap, range: rnge, fuelBurn: burn,
+      condition: 100, status: 'READY', assignedRoute: null, assignedPilot: null
+    };
+    
+    State.fleet.push(importedMineral);
+    updateHUD(); renderFleet(); toast("Mineral Specimen acquired via Trade Code!");
+  }
+
+  function generateRoutes() {
+    let rts = [];
+    let roles = TREE_STYLES;
+    let used = new Set();
+    let idCounter = 0;
+
+    roles.forEach(role => {
+      let pool = ZONE_CAT[role] || ZONE_CAT["PRISMATIC"];
+      let count = role === "PRISMATIC" || role === "GEODE" ? 80 : 60; // 400 total
+      for(let i=0; i<count; i++) {
+        let a1, a2, pair;
+        let attempts = 0;
+        do {
+          a1 = pool[Math.floor(Math.random() * pool.length)];
+          a2 = pool[Math.floor(Math.random() * pool.length)];
+          pair = `${a1}-${a2}-${role}`;
+          attempts++;
+        } while((a1 === a2 || used.has(pair)) && attempts < 50);
+        
+        used.add(pair);
+        let dist = role === 'NATIVE_METEOR' ? Math.floor(1200 + Math.random() * 7500) : Math.floor(350 + Math.random() * 8500);
+        
+        rts.push({
+          id: "rt_" + (idCounter++),
+          name: `${a1} ↔ ${a2}`, role: role, dist: dist,
+          cost: Math.ceil((35 + (Math.pow(dist, 1.15) * 0.42)) / 5) * 5,
+          unlocked: idCounter === 1,
+          minTier: dist > 6500 ? "International" : dist > 4000 ? "National" : dist > 1500 ? "Regional" : "Local Swap"
+        });
+      }
+    });
+
+    rts.sort((a,b) => a.dist - b.dist);
+    rts[0].unlocked = true;
+    return rts;
+  }
+
+  function getHabitForSpecies(mIdx) {
+    if (mIdx <= 4) return 0;  // PRISMATIC
+    if (mIdx <= 7) return 1;  // GEODE
+    if (mIdx <= 11) return 2; // CUBIC
+    if (mIdx <= 14) return 3; // BOTRYOIDAL
+    if (mIdx <= 17) return 4; // FOSSIL (Ammonite, Megalodon Tooth, Trilobite)
+    return 5;                 // NATIVE_METEOR
+  }
+
+  function harvestStrain(tIdx, skipImage = false) {
+    let pIdx = Math.floor(Math.random() * TREE_PREFIXES.length);
+    let bIdx = Math.floor(Math.random() * TREE_ORIGINS.length);
+    let mIdx = Math.floor(Math.random() * TREE_SPECIES.length);
+    let rIdx = getHabitForSpecies(mIdx);
+    let tD = TIERS[tIdx];
+    let sp = TREE_SPECIES[mIdx];
+    let role = TREE_STYLES[rIdx];
+
+    let fluct = 1.0 + (Math.random() * 0.4 - 0.2); 
+    let val = Math.max(8, Math.floor(tD.baseVal * fluct));
+    let seedInt = Math.floor(Math.random() * 9999999);
+
+    return {
+      uid: 'M' + Math.floor(100+Math.random()*899) + 'XL',
+      pIdx, bIdx, mIdx, rIdx, tierIndex: tIdx, seedInt: seedInt,
+      imgData: skipImage ? null : generateBonsaiImage(seedInt, role, tIdx, sp, pIdx, bIdx),
+      name: `${TREE_PREFIXES[pIdx]} ${TREE_ORIGINS[bIdx]} ${sp}`,
+      role: role, tierName: tD.name, tierColor: tD.color,
+      value: val, cost: Math.max(6, Math.floor(val * 0.78)), 
+      capacity: Math.floor(12 + (tIdx * 85) * fluct), // Carats / Grams
+      range: Math.floor(1000 + (tIdx * 900) * fluct), 
+      fuelBurn: Math.floor(3 + (tIdx * 2)), // Prep Units
+      condition: 100, status: 'READY', assignedRoute: null, assignedPilot: null
+    };
+  }
+
+  function hireCourier(fIdx, lIdx, cIdx, tIdx, bIdx) {
+    let rawPow = [6,25,100,300,1000,2500,6000,15000,35000,66666][tIdx];
+    return {
+      uid: Date.now()+Math.random().toString(36).substring(2,8), fIdx, lIdx, cIdx, tIdx, bIdx,
+      name: `${P_FIRST[fIdx]} ${P_CALL[cIdx]} ${P_LAST[lIdx]}`,
+      tierIndex: tIdx, tierName: TIERS[tIdx].name, tierColor: TIERS[tIdx].color,
+      bType: B_TYPES[bIdx], bonus: rawPow, value: Math.max(15, Math.floor(TIERS[tIdx].baseVal * 0.4)),
+      locked: false, assignedTo: null
+    };
+  }
+
+  /* ================= QUARRY DROPS MARKET (NO MARKET IMAGES!) ================= */
+  function refreshMarket() {
+    State.marketCars = [];
+    for(let i=0; i<5; i++) {
+      let r = Math.random()*100; let tI = r>99.9?9 : r>99?8 : r>95?7 : r>85?6 : r>70?5 : r>50?4 : r>30?3 : r>15?2 : r>5?1 : 0;
+      State.marketCars.push(harvestStrain(tI, true));
+    }
+    renderMarket();
+  }
+
+  function renderMarket() {
+    const grid = $('market-grid'); if(!grid) return; grid.innerHTML = '';
+    State.marketCars.forEach((c, idx) => {
+      let rCol = c.role === 'PRISMATIC' ? '#38bdf8' : c.role === 'GEODE' ? '#a855f7' : c.role === 'CUBIC' ? '#f59e0b' : c.role === 'BOTRYOIDAL' ? '#22c55e' : c.role === 'FOSSIL' ? '#ef4444' : '#fbbf24';
+      const lusterTag = `${TREE_PREFIXES[c.pIdx ?? 0]} • ${TREE_ORIGINS[c.bIdx ?? 0]}`;
+      grid.innerHTML += `
+        <div class="strain-card" style="border-color:${c.tierColor};">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:${c.tierColor}; font-weight:bold; font-size:10px;">[${c.tierName}]</span>
+            <span class="badge" style="color:${rCol}; border-color:${rCol};">${c.role}</span>
+          </div>
+          <div class="bud-art-container" style="padding:8px 10px;">
+            <div style="flex:1;">
+              <div style="font-size:12px; font-weight:900; color:#fff;">${c.name}</div>
+              <div style="font-size:9px; color:var(--status-green); margin-top:2px;">Assay: ${lusterTag} // #${c.seedInt}</div>
+            </div>
+          </div>
+          <div class="spec-grid">
+            <div><span>WEIGHT:</span> ${c.capacity} CT</div>
+            <div><span>SHOWS:</span> ${c.range.toLocaleString()} MI</div>
+            <div><span>PREP:</span> ${c.fuelBurn} u/sh</div>
+            <div><span>APPRAISAL:</span> $${fmt(c.value)}</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <div>
+              <div style="font-size:9px; color:var(--silver-dim);">Retail Appraisal: $${fmt(c.value)}</div>
+              <div style="font-size:12px; color:var(--status-green); font-weight:bold; font-family:monospace;">Field Ask: $${fmt(c.cost)}</div>
+            </div>
+            <button class="btn btn-green" onclick="buyMarketStrain(${idx})">ACQUIRE</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function buyMarketStrain(idx) {
+    let c = State.marketCars[idx]; if(!c) return;
+    if(State.funds < c.cost) { toast("Insufficient cash."); return; }
+    State.funds -= c.cost;
+    ensureTreeImage(c);
+    State.fleet.push(c);
+    State.marketCars.splice(idx, 1);
+    toast(`Cataloged: ${c.name}`); updateHUD(); renderMarket();
+  }
+
+  function buySeeds(bIdx, count) {
+    let costs = [20, 200, 2000, 15000];
+    let c = State.buyMode === 1 ? count : Math.max(1, Math.floor(Math.floor(State.funds/costs[bIdx]) * State.buyMode));
+    let cost = costs[bIdx] * c;
+    if(State.funds < cost) { toast("Insufficient cash."); return; }
+    State.funds -= cost;
+    let tArr = bIdx===0?[0,1,2,3]:bIdx===1?[2,3,4,5]:bIdx===2?[4,5,6,7]:[6,7,8,9];
+    for(let i=0; i<c; i++) {
+      let r = Math.random()*100; let tI = r>95?tArr[3]:r>80?tArr[2]:r>50?tArr[1]:tArr[0];
+      State.fleet.push(harvestStrain(tI, c > 10));
+    }
+    updateHUD(); toast(`Extracted ${c}x Specimens.`);
+  }
+
+  function buyResumes(bIdx, count) {
+    let costs = [25, 150, 800, 4000];
+    let c = State.buyMode === 1 ? count : Math.max(1, Math.floor(Math.floor(State.funds/costs[bIdx]) * State.buyMode));
+    let cost = costs[bIdx] * c;
+    if(State.funds < cost) { toast("Insufficient cash."); return; }
+    State.funds -= cost;
+    let tArr = bIdx===0?[0,1,2,3]:bIdx===1?[2,3,4,5]:bIdx===2?[4,5,6,7]:[6,7,8,9];
+    for(let i=0; i<c; i++) {
+      let r = Math.random()*100; let tI = r>95?tArr[3]:r>80?tArr[2]:r>50?tArr[1]:tArr[0];
+      State.pilots.push(hireCourier(Math.floor(Math.random()*20), Math.floor(Math.random()*20), Math.floor(Math.random()*8), tI, Math.floor(Math.random()*4)));
+    }
+    updateHUD(); toast(`Hired ${c}x Geologists.`);
+  }
+
+  function buyFuelFixed(amount) {
+    let unit = State.fuelSpotPrice;
+    let gal = amount === 'MAX' ? Math.floor(State.funds / unit) : amount;
+    if(gal <= 0) { toast("Insufficient cash."); return; }
+    let cost = gal * unit;
+    if(State.funds < cost) { toast("Insufficient cash."); return; }
+    State.funds -= cost; State.fuelReserve += gal;
+    toast(`Bought ${fmt(gal)} Acid/Grit Units.`); updateHUD();
+  }
+
+  /* ================= DISPLAY CASES (INVENTORY) ================= */
+  function sortHangar(mode) { State.sortHangarMode = mode; renderFleet(); }
+  function filterHangarRole(val) { State.filterHangarRole = val; renderFleet(); }
+  function filterHangarTier(val) { State.filterHangarTier = val; renderFleet(); }
+  
+  function assignRoute(pUid, rId) { const p = State.fleet.find(x=>x.uid===pUid); if(p) p.assignedRoute = rId; }
+  function assignPilot(pUid, piUid) {
+    const p = State.fleet.find(x=>x.uid===pUid); if(!p) return;
+    if(p.assignedPilot) { let o = State.pilots.find(x=>x.uid===p.assignedPilot); if(o) o.assignedTo = null; }
+    if(piUid==="") p.assignedPilot = null; 
+    else { p.assignedPilot=piUid; let n=State.pilots.find(x=>x.uid===piUid); if(n) n.assignedTo=pUid; }
+    renderFleet();
+  }
+
+  function autoAssignPilots() {
+    let unassigned = State.fleet.filter(p => !p.assignedPilot && p.status === 'READY');
+    let freeCouriers = State.pilots.filter(p => !p.assignedTo && !p.locked).sort((a,b) => b.bonus - a.bonus);
+    if(unassigned.length === 0 || freeCouriers.length === 0) {
+      toast("No uncurated specimens or available geologists."); return;
+    }
+    let paired = 0;
+    unassigned.forEach(p => {
+      if(freeCouriers.length > 0) {
+        let pilot = freeCouriers.shift();
+        p.assignedPilot = pilot.uid;
+        pilot.assignedTo = p.uid;
+        paired++;
+      }
+    });
+    toast(`Assigned curators to ${paired} display cases.`); renderFleet(); renderPilots();
+  }
+
+  function autoAssignRoutes() {
+    let unrouted = State.fleet.filter(p => !p.assignedRoute && p.status === 'READY');
+    let uRts = State.routes.filter(r => r.unlocked);
+    if(unrouted.length === 0 || uRts.length === 0) {
+      toast("No idle specimens or unlocked gem shows."); return;
+    }
+    let routedCnt = 0;
+    unrouted.forEach(p => {
+      let valid = uRts.filter(r => (r.role === p.role || r.role === 'PRISMATIC') && r.dist <= p.range);
+      if(valid.length > 0) {
+        valid.sort((a,b) => b.dist - a.dist);
+        p.assignedRoute = valid[0].id;
+        routedCnt++;
+      }
+    });
+    toast(`Auto-Booked ${routedCnt} specimens to furthest gem shows.`);
+    renderFleet();
+  }
+
+  function renderFleet() {
+    const list = $('fleet-list'); if(!list) return; list.innerHTML = '';
+    let filtered = [...State.fleet];
+    if(State.filterHangarRole !== 'ALL') filtered = filtered.filter(p => p.role === State.filterHangarRole);
+    if(State.filterHangarTier !== 'ALL') filtered = filtered.filter(p => p.tierIndex === parseInt(State.filterHangarTier));
+    
+    if(filtered.length===0) { list.innerHTML=`<div style="text-align:center; padding:20px; color:var(--silver-dim); font-size:11px;">No specimens match current filters.</div>`; return; }
+
+    if(State.sortHangarMode==='val') filtered.sort((a,b)=>b.value-a.value);
+    if(State.sortHangarMode==='tier') filtered.sort((a,b)=>b.tierIndex-a.tierIndex);
+    if(State.sortHangarMode==='range') filtered.sort((a,b)=>b.range-a.range);
+
+    const uRts = State.routes.filter(r => r.unlocked);
+    
+    let routeOptionsCache = {};
+    TREE_STYLES.forEach(role => {
+        let opts = `<option value="">-- Assign Gem Show (${role}) --</option>`;
+        uRts.filter(r => r.role === role || r.role === 'PRISMATIC').forEach(r => {
+            opts += `<option value="${r.id}">${r.name} [${r.role}] (${r.dist} MI)</option>`;
+        });
+        routeOptionsCache[role] = opts;
+    });
+
+    let pilotOpts = `<option value="">-- Assign Geologist --</option>`;
+    State.pilots.forEach(pl => { 
+        if(!pl.assignedTo) pilotOpts += `<option value="${pl.uid}">${pl.name} [${pl.bType}: +${fmt(pl.bonus)}%]</option>`; 
+    });
+
+    filtered.forEach(p => {
+      ensureTreeImage(p);
+      let rCol = p.role === 'PRISMATIC' ? '#38bdf8' : p.role === 'GEODE' ? '#a855f7' : p.role === 'CUBIC' ? '#f59e0b' : p.role === 'BOTRYOIDAL' ? '#22c55e' : p.role === 'FOSSIL' ? '#ef4444' : '#fbbf24';
+      
+      let pOpts = routeOptionsCache[p.role];
+      if(p.assignedRoute) pOpts = pOpts.replace(`value="${p.assignedRoute}"`, `value="${p.assignedRoute}" selected`);
+      let rtSel = `<select ${p.status==='IN_FLIGHT'?'disabled':''} onchange="assignRoute('${p.uid}', this.value)">${pOpts}</select>`;
+
+      let pPilotOpts = pilotOpts;
+      if(p.assignedPilot) {
+          let pl = State.pilots.find(x=>x.uid === p.assignedPilot);
+          if(pl) pPilotOpts += `<option value="${pl.uid}" selected>${pl.name}</option>`;
+      }
+      let piSel = `<select ${p.status==='IN_FLIGHT'?'disabled':''} onchange="assignPilot('${p.uid}', this.value)">${pPilotOpts}</select>`;
+      const safeName = p.name.replace(/'/g, "\\'");
+      const lusterTag = `${TREE_PREFIXES[p.pIdx ?? 0]} • ${TREE_ORIGINS[p.bIdx ?? 0]}`;
+
+      list.innerHTML += `
+        <div class="strain-card ${p.status==='IN_FLIGHT'?'in-flight':p.condition<50?'damaged':''}" style="border-color:${p.tierColor};">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="color:${p.tierColor}; font-weight:bold; font-size:10px;">[${p.tierName}]</span>
+              <span style="font-size:12px; font-weight:900; color:#fff; margin-left:3px;">${p.name}</span>
+            </div>
+            <span class="badge" style="color:${rCol}; border-color:${rCol};">${p.role}</span>
+          </div>
+          
+          <div class="bud-art-container">
+            <img class="bud-pixel-canvas" src="${p.imgData}" title="Tap to Rotate 3D Specimen" onclick="openInspectModal(${p.seedInt}, '${p.role}', ${p.tierIndex}, ${p.mIdx}, ${p.pIdx ?? 0}, ${p.bIdx ?? 0}, '${safeName}')">
+            <div style="flex:1;">
+              <div style="font-size:10px; font-weight:bold; color:var(--status-green);">${lusterTag}</div>
+              <div style="font-size:9px; color:var(--silver-bright);">Weight: ${p.capacity} ct // Val: $${fmt(p.value)}</div>
+              <div style="font-size:8.5px; color:var(--silver-dim);">Tap specimen for 60FPS 3D View</div>
+            </div>
+            <button class="btn btn-purple" style="padding:4px 6px; font-size:9px;" onclick="snapGalleryPic('${p.uid}')">📸 Vault</button>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:8.5px; font-family:monospace; color:var(--silver-dim);">
+            <span>LUSTER/POLISH: ${p.condition.toFixed(0)}%</span>
+            <span id="st-${p.uid}">STATUS: <strong style="color:#fff;">${p.status}</strong></span>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:3px;">${rtSel}${piSel}</div>
+          ${p.status==='IN_FLIGHT'?`<div class="flight-bar-bg"><div id="bar-${p.uid}" class="flight-bar-fill"></div></div>`:''}
+          
+          <div style="display:flex; justify-content:space-between; margin-top:3px;">
+            <div style="display:flex; gap:3px;">
+              <button class="btn" style="padding:3px 5px; font-size:8px;" onclick="exportStrain('${p.uid}')">Code</button>
+              <button class="btn btn-purple" style="padding:3px 5px; font-size:8px;" ${p.status==='IN_FLIGHT'?'disabled':''} onclick="initAuction('${p.uid}', 'plane')">Auction</button>
+              <button class="btn btn-danger" style="padding:3px 5px; font-size:8px;" ${p.status==='IN_FLIGHT'?'disabled':''} onclick="consumeStrain('${p.uid}')">Sell Local</button>
+            </div>
+            <div style="display:flex; gap:3px;">
+              <button class="btn" style="padding:3px 6px; font-size:8px;" ${p.status==='IN_FLIGHT'?'disabled':''} onclick="maintainAirframe('${p.uid}')">Clean</button>
+              <button class="btn btn-green" style="padding:4px 8px; font-size:8.5px;" ${p.status==='IN_FLIGHT'||!p.assignedRoute||!p.assignedPilot?'disabled':''} onclick="dispatchFlight('${p.uid}')">Exhibit</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function consumeStrain(uid) {
+    let i = State.fleet.findIndex(x=>x.uid===uid); if(i===-1) return;
+    let val = Math.max(5, Math.floor(State.fleet[i].value * 0.5)); State.funds+=val;
+    if(State.fleet[i].assignedPilot) { let p=State.pilots.find(x=>x.uid===State.fleet[i].assignedPilot); if(p) p.assignedTo=null; }
+    State.fleet.splice(i,1); State.statPlanesScrapped++;
+    toast(`Sold to rock shop. Yielded $${fmt(val)}.`); updateHUD(); renderFleet();
+  }
+
+  function quickSellStrains(maxT) {
+    let t = State.fleet.filter(s=>s.tierIndex<=maxT && s.status==='READY');
+    if(t.length===0){toast("No eligible specimens in tier bracket.");return;}
+    let tot=0; t.forEach(s=>{
+      tot+=Math.max(5, Math.floor(s.value*0.5));
+      if(s.assignedPilot) { let p=State.pilots.find(x=>x.uid===s.assignedPilot); if(p) p.assignedTo=null; }
+      State.statPlanesScrapped++;
+    });
+    State.fleet = State.fleet.filter(s=>s.tierIndex>maxT || s.status!=='READY');
+    State.funds+=tot; toast(`Sold ${t.length} specimens locally for $${fmt(tot)}.`); updateHUD(); renderFleet(); renderPilots();
+  }
+
+  /* ================= MUSEUM VAULT GALLERY ================= */
+  function snapGalleryPic(uid) {
+    let p = State.fleet.find(x => x.uid === uid);
+    if(!p) return;
+    ensureTreeImage(p);
+    
+    State.gallery.push({
+      gid: "gal_" + Date.now() + Math.floor(Math.random()*1000),
+      seedInt: p.seedInt, mIdx: p.mIdx, pIdx: p.pIdx ?? 0, bIdx: p.bIdx ?? 0,
+      role: p.role, tierIdx: p.tierIndex,
+      name: p.name, tierName: p.tierName, tierColor: p.tierColor,
+      locked: true, imgData: p.imgData
+    });
+    
+    toast(`📸 Specimen cataloged in Museum Vault!`);
+    if($('tab-gallery').classList.contains('active')) renderGallery();
+  }
+
+  function toggleGalleryLock(gid) {
+    let g = State.gallery.find(x => x.gid === gid);
+    if(g) { g.locked = !g.locked; renderGallery(); }
+  }
+
+  function deleteGalleryPic(gid) {
+    let idx = State.gallery.findIndex(x => x.gid === gid);
+    if(idx > -1) {
+       State.gallery.splice(idx, 1);
+       toast(`Specimen removed from Vault.`);
+       renderGallery();
+    }
+  }
+
+  function renderGallery() {
+    const list = $('gallery-grid'); if(!list) return; list.innerHTML = '';
+    
+    if(State.gallery.length === 0) { 
+        list.innerHTML=`<div style="text-align:center; padding:20px; color:var(--silver-dim); font-size:11px;">Your Museum Vault is empty. Catalog prized crystals from your Display Cases!</div>`; 
+        return; 
+    }
+
+    State.gallery.forEach(g => {
+      ensureTreeImage(g);
+      let rCol = g.role === 'PRISMATIC' ? '#38bdf8' : g.role === 'GEODE' ? '#a855f7' : g.role === 'CUBIC' ? '#f59e0b' : g.role === 'BOTRYOIDAL' ? '#22c55e' : g.role === 'FOSSIL' ? '#ef4444' : '#fbbf24';
+      const safeName = g.name.replace(/'/g, "\\'");
+      
+      list.innerHTML += `
+        <div class="strain-card" style="border-color:${g.locked ? 'var(--status-green)' : g.tierColor};">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:${g.tierColor}; font-weight:bold; font-size:10px;">[${g.tierName}]</span>
+            <span class="badge" style="color:${rCol}; border-color:${rCol};">${g.role}</span>
+          </div>
+          <div style="display:flex; justify-content:center; padding:10px 0;">
+             <img src="${g.imgData}" onclick="openInspectModal(${g.seedInt}, '${g.role}', ${g.tierIdx}, ${g.mIdx}, ${g.pIdx ?? 0}, ${g.bIdx ?? 0}, '${safeName}')" style="width:160px; height:160px; image-rendering:pixelated; background:#000; border:1px solid #142014; border-radius:4px; cursor:zoom-in;" />
+          </div>
+          <div style="text-align:center; font-size:14px; font-weight:900; color:#fff;">${g.name}</div>
+          <div style="text-align:center; font-size:9px; color:var(--silver-dim); margin-bottom: 8px;">Tap Image for 3D Voxel Inspection</div>
+          <div style="display:flex; justify-content:space-between; gap: 4px;">
+            <button class="btn" style="flex:1;" onclick="toggleGalleryLock('${g.gid}')">${g.locked ? 'UNLOCK 🔓' : 'LOCK 🔒'}</button>
+            <button class="btn btn-danger" style="flex:1;" ${g.locked ? 'disabled' : ''} onclick="deleteGalleryPic('${g.gid}')">REMOVE</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  /* ================= GEOLOGISTS ROSTER ================= */
+  function sortPilots(mode) { State.sortPilotsMode = mode; renderPilots(); }
+  function filterPilotTier(val) { State.filterPilotTier = val; renderPilots(); }
+
+  function renderPilots() {
+    const grid = $('pilots-grid'); if(!grid) return; grid.innerHTML = '';
+    
+    let filtered = [...State.pilots];
+    if(State.filterPilotTier !== 'ALL') filtered = filtered.filter(p => p.tierIndex === parseInt(State.filterPilotTier));
+    if(filtered.length===0) { grid.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--silver-dim); font-size:11px;">No geologists match filter criteria.</div>`; return; }
+
+    if(State.sortPilotsMode==='val') filtered.sort((a,b)=>b.value-a.value);
+    if(State.sortPilotsMode==='tier') filtered.sort((a,b)=>b.tierIndex-a.tierIndex);
+    
+    filtered.forEach(p => {
+      grid.innerHTML += `
+        <div class="strain-card" style="border-color:${p.tierColor};">
+          <div class="stat-block" style="display:flex; justify-content:space-between;">
+            <span style="color:${p.tierColor}; font-weight:bold; font-size:9.5px;">${p.tierName}</span>
+            <span style="color:var(--status-green); font-size:9.5px;">[${p.bType}] +${fmt(p.bonus)}%</span>
+          </div>
+          <div style="font-size:12px; font-weight:900; color:#fff;">${p.name} ${p.locked?'[🔒]':''}</div>
+          <div style="font-size:9px; color:var(--silver-dim);">${p.assignedTo ? `Curating: ${p.assignedTo}` : 'Standby / Unassigned'}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span class="stat-block" style="font-size:10px; color:var(--silver-bright); font-weight:bold;">STIPEND: $${fmt(p.value)}</span>
+            <div style="display:flex; flex-wrap:wrap; gap:3px; justify-content:flex-end;">
+              <button class="btn" style="padding:3px 5px; font-size:8px;" onclick="exportCourier('${p.uid}')">Trade</button>
+              <button class="btn" style="padding:3px 5px; font-size:8px;" onclick="togglePilotLock('${p.uid}')">${p.locked?'Unlock':'Lock'}</button>
+              ${!p.assignedTo&&!p.locked?`<button class="btn btn-purple" style="padding:3px 5px; font-size:8px;" onclick="initAuction('${p.uid}', 'pilot')">Auction</button><button class="btn btn-danger" style="padding:3px 5px; font-size:8px;" onclick="sellPilot('${p.uid}')">Fire</button>`:''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  }
+  function togglePilotLock(uid) { let p=State.pilots.find(x=>x.uid===uid); if(p){p.locked=!p.locked; renderPilots();} }
+  function sellPilot(uid) {
+    let idx = State.pilots.findIndex(s=>s.uid===uid);
+    if(idx>-1) { let v=Math.max(5, Math.floor(State.pilots[idx].value*0.5)); State.funds+=v; State.pilots.splice(idx,1); toast(`Released. Severance recovered $${fmt(v)}.`); updateHUD(); renderPilots(); renderFleet(); }
+  }
+  function quickSellPilots(maxT) {
+    let ts = State.pilots.filter(s=>s.tierIndex<=maxT && !s.assignedTo && !s.locked);
+    if(ts.length===0){toast("No eligible geologists.");return;}
+    let tot=0; ts.forEach(s=>tot+=Math.max(5, Math.floor(s.value*0.5)));
+    State.pilots = State.pilots.filter(s=>s.tierIndex>maxT || s.assignedTo || s.locked);
+    State.funds+=tot; toast(`Released ${ts.length} staff. Recovered $${fmt(tot)}.`); updateHUD(); renderPilots();
+  }
+
+  /* ================= GEM & MINERAL SHOWS (ROUTES) ================= */
+  function filterRouteCategory(val) { State.filterRouteCat = val; renderRoutes(); }
+
+  function renderRoutes() {
+    const list = $('routes-list'); if(!list) return; list.innerHTML = '';
+    let filtered = State.filterRouteCat === 'ALL' ? State.routes : State.routes.filter(r => r.role === State.filterRouteCat);
+
+    filtered.forEach(r => {
+      let rCol = r.role === 'PRISMATIC' ? '#38bdf8' : r.role === 'GEODE' ? '#a855f7' : r.role === 'CUBIC' ? '#f59e0b' : r.role === 'BOTRYOIDAL' ? '#22c55e' : r.role === 'FOSSIL' ? '#ef4444' : '#fbbf24';
+      let yieldM = 1.0 + (State.upgrades.mkt*0.05);
+      let baseYield = Math.floor(r.dist * 0.16 * yieldM);
+      let fuelCost = ((r.dist * 0.025) * (1 - Math.min(0.7, State.upgrades.eng*0.02))) * State.fuelSpotPrice;
+      let netProfit = Math.max(15, Math.floor(baseYield - fuelCost));
+
+      list.innerHTML += `
+        <div class="route-row">
+          <div style="flex:1;">
+            <div style="font-weight:900; color:#fff;">${r.name} <span class="badge" style="margin-left:4px; color:${rCol}; border-color:${rCol};">${r.role}</span></div>
+            <div style="font-size:9px; color:var(--silver-dim); font-family:monospace; margin-top:2px;">
+              ${r.dist.toLocaleString()} MILES // Tier: ${r.minTier}
+            </div>
+            <div style="font-size:9px; color:var(--silver-dim); font-family:monospace; margin-top:2px;">
+              Show Award: $${fmt(baseYield)} | Prep/Shipping: -$${fmt(fuelCost)}
+            </div>
+            <div style="font-size:10px; color:var(--status-green); font-weight:bold; font-family:monospace; margin-top:2px;">
+              Est. Net Yield: ~$${fmt(netProfit)}
+            </div>
+          </div>
+          <div>
+            ${r.unlocked?`<span style="color:var(--status-green); font-weight:bold; font-family:monospace;">BOOKED ✓</span>`:`<button class="btn btn-green" onclick="unlockRoute('${r.id}')">Booth ($${fmt(r.cost)})</button>`}
+          </div>
+        </div>
+      `;
+    });
+  }
+  function unlockRoute(rId) { const r=State.routes.find(x=>x.id===rId); if(!r)return; if(State.funds<r.cost){toast("Insufficient Cash.");return;} State.funds-=r.cost; r.unlocked=true; updateHUD(); renderRoutes(); renderFleet(); }
+
+  /* ================= AUTOMATIONS & PREP LAB ================= */
+  function toggleAutoLoop() {
+    State.automation.autoDispatch = !State.automation.autoDispatch;
+    toast(`Auto-Show Circuit: ${State.automation.autoDispatch ? 'ON' : 'OFF'}`);
+    updateAutomationUI();
+  }
+  function toggleAutoMRO() {
+    State.automation.autoMRO = !State.automation.autoMRO;
+    toast(`Auto Ultrasonic Clean: ${State.automation.autoMRO ? 'ON' : 'OFF'}`);
+    updateAutomationUI();
+  }
+  function toggleAutoRefuel() {
+    State.automation.autoRefuel = !State.automation.autoRefuel;
+    toast(`Auto Acid/Grit Restock: ${State.automation.autoRefuel ? 'ON' : 'OFF'}`);
+    updateAutomationUI();
+  }
+  function updateAutomationUI() {
+    if($('chk-autoloop'))$('chk-autoloop').innerText = State.automation.autoDispatch ? 'ACTIVE' : 'ENABLE';
+    if($('chk-automro'))$('chk-automro').innerText = State.automation.autoMRO ? 'ACTIVE' : 'ENABLE';
+    if($('chk-autorefuel'))$('chk-autorefuel').innerText = State.automation.autoRefuel ? 'ACTIVE' : 'ENABLE';
+    renderMilestones();
+    renderSideMissions();
+  }
+
+  function generateSideMissions() {
+    let unlocked = State.routes.filter(r => r.unlocked);
+    if(unlocked.length === 0) unlocked = State.routes; 
+    
+    State.sideMissions = [];
+    for(let i=0; i<3; i++) {
+        let rt = unlocked[Math.floor(Math.random() * unlocked.length)];
+        State.sideMissions.push({
+            id: "sm_" + Date.now() + i,
+            title: `Exhibition Request: ${rt.name}`,
+            desc: `Show committee seeks a fine ${rt.role} specimen displayed at ${rt.name}.`,
+            reqRoute: rt.id, reqRole: rt.role, readyToClaim: false,
+            rewardCash: Math.floor(rt.dist * 0.45) + 150,
+            rewardTier: Math.min(9, Math.floor(rt.dist / 1000))
+        });
+    }
+  }
+
+  function refreshSideMissions() {
+    generateSideMissions();
+    renderSideMissions();
+    toast("Museum requests refreshed.");
+  }
+
+  function renderSideMissions() {
+    const list = $('side-missions-list'); if(!list) return; list.innerHTML = '';
+    State.sideMissions.forEach((m, idx) => {
+      let isReady = m.readyToClaim;
+      let rText = `+$${fmt(m.rewardCash)} & Free T${m.rewardTier+1} Specimen`;
+      list.innerHTML += `
+        <div class="check-item ${isReady ? 'done' : ''}">
+          <div>
+            <div style="font-weight:bold; color:#fff;">${m.title}</div>
+            <div style="font-size:9.5px; color:var(--silver-dim);">${m.desc}</div>
+            <div style="font-size:9.5px; color:var(--status-green); font-weight:bold; margin-top:2px;">Grant: ${rText}</div>
+          </div>
+          <div>
+            <button class="btn btn-green" ${isReady ? '' : 'disabled'} onclick="claimSideMission(${idx})">COLLECT</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function claimSideMission(idx) {
+    let m = State.sideMissions[idx];
+    if(!m || !m.readyToClaim) return;
+    
+    State.funds += m.rewardCash;
+    let bonusStrain = harvestStrain(m.rewardTier); 
+    State.fleet.push(bonusStrain);
+    toast(`Grant Awarded! +$${fmt(m.rewardCash)} & ${bonusStrain.name} acquired!`);
+
+    State.sideMissions.splice(idx, 1);
+    
+    let unlocked = State.routes.filter(r => r.unlocked);
+    if(unlocked.length === 0) unlocked = State.routes;
+    let rt = unlocked[Math.floor(Math.random() * unlocked.length)];
+    State.sideMissions.push({
+        id: "sm_" + Date.now(),
+        title: `Exhibition Request: ${rt.name}`,
+        desc: `Show committee seeks a fine ${rt.role} specimen displayed at ${rt.name}.`,
+        reqRoute: rt.id, reqRole: rt.role, readyToClaim: false,
+        rewardCash: Math.floor(rt.dist * 0.45) + 150,
+        rewardTier: Math.min(9, Math.floor(rt.dist / 1000))
+    });
+
+    updateHUD(); renderSideMissions();
+  }
+
+  function renderMilestones() {
+    const list = $('milestone-list'); if(!list) return; list.innerHTML = '';
+    MILESTONES.forEach(m => {
+      let isClaimed = State.claimedMilestones.includes(m.id);
+      let canClaim = !isClaimed && m.req(State);
+      list.innerHTML += `
+        <div class="check-item ${isClaimed ? 'done' : ''}">
+          <div>
+            <div style="font-weight:bold; color:${isClaimed ? 'var(--status-green)' : '#fff'};">${isClaimed ? '✓ ' : ''}${m.title}</div>
+            <div style="font-size:9.5px; color:var(--silver-dim);">${m.desc}</div>
+            <div style="font-size:9.5px; color:var(--status-amber); font-weight:bold; margin-top:1px;">Grant: +$${fmt(m.reward)}</div>
+          </div>
+          <div>
+            ${isClaimed 
+              ? `<span style="color:var(--status-green); font-weight:bold; font-size:9px;">CLAIMED</span>` 
+              : `<button class="btn btn-green" ${canClaim ? '' : 'disabled'} onclick="claimMilestone('${m.id}')">CLAIM</button>`
+            }
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function claimMilestone(mId) {
+    let m = MILESTONES.find(x => x.id === mId);
+    if(!m || State.claimedMilestones.includes(mId) || !m.req(State)) return;
+    State.claimedMilestones.push(mId);
+    State.funds += m.reward;
+    toast(`Milestone Achieved: +$${fmt(m.reward)}`);
+    updateHUD(); renderMilestones();
+  }
+
+  /* ================= UPGRADES (REALISTIC STARTING COSTS) ================= */
+  function getUpgCost(type, lvl) { return type==='mkt' ? Math.floor(250*Math.pow(1.5,lvl)) : Math.floor(400*Math.pow(1.6,lvl)); }
+  function renderUpgrades() {
+    let mC = getUpgCost('mkt', State.upgrades.mkt); let eC = getUpgCost('eng', State.upgrades.eng);
+    if($('upg-mkt-lvl'))$('upg-mkt-lvl').innerText=State.upgrades.mkt; 
+    if($('upg-mkt-pct'))$('upg-mkt-pct').innerText=State.upgrades.mkt*5; 
+    if($('upg-mkt-cost'))$('upg-mkt-cost').innerText=fmt(mC);
+    
+    if($('upg-eng-lvl'))$('upg-eng-lvl').innerText=State.upgrades.eng; 
+    if($('upg-eng-pct'))$('upg-eng-pct').innerText=Math.min(70, State.upgrades.eng*2); 
+    if($('upg-eng-cost'))$('upg-eng-cost').innerText=fmt(eC);
+  }
+  function buyUpgrade(type) {
+    let cost = getUpgCost(type, State.upgrades[type]);
+    if(State.funds < cost) { toast("Insufficient Cash."); return; }
+    State.funds -= cost; State.upgrades[type]++;
+    updateHUD(); renderUpgrades(); toast("Lab upgraded.");
+  }
+
+  /* ================= GEM SHOW DISPATCH ================= */
+  function dispatchFlight(pUid) {
+    const p = State.fleet.find(x=>x.uid===pUid); if(!p||p.status==='IN_FLIGHT'||!p.assignedRoute||!p.assignedPilot)return;
+    const r = State.routes.find(x=>x.id===p.assignedRoute); const pl = State.pilots.find(x=>x.uid===p.assignedPilot); if(!r||!pl)return;
+    
+    if(p.condition < 45) {
+      if(State.automation.autoMRO && State.funds >= Math.ceil((100-p.condition)*0.5)) {
+        maintainAirframe(p.uid);
+      } else {
+        toast("[DUSTY MATRIX] Luster dull. Must Ultrasonic Clean."); return;
+      }
+    }
+
+    let yieldM = 1.0 + (State.upgrades.mkt*0.05); let speedD = 1.0; let fuelD = 1.0; let safeD = 1.0;
+    if(pl.bType==='PREP') yieldM *= (1 + pl.bonus/100);
+    if(pl.bType==='SPEED') speedD = 1 + pl.bonus/100; 
+    if(pl.bType==='ACID') fuelD = 1 + pl.bonus/100;
+    if(pl.bType==='PACKING') safeD = 1 + pl.bonus/100;
+
+    let baseMs = Math.max(5000, Math.min(90000, (r.dist/8000)*90000));
+    let msTime = Math.max(1000, baseMs / speedD); 
+
+    let fBurn = Math.max(1, Math.floor((r.dist * 0.025) * (1 - Math.min(0.7, State.upgrades.eng*0.02)) / fuelD));
+    
+    if(State.fuelReserve < fBurn) {
+      if(State.automation.autoRefuel && State.funds >= 2500 * State.fuelSpotPrice) {
+        State.funds -= 2500 * State.fuelSpotPrice;
+        State.fuelReserve += 2500;
+      } else {
+        toast("Insufficient Acid/Grit Supply."); return;
+      }
+    }
+    State.fuelReserve -= fBurn;
+
+    let bRev = Math.max(15, Math.floor(r.dist * 0.16 * yieldM));
+    
+    p.status='IN_FLIGHT'; p.flightStart=Date.now(); p.flightDuration=msTime; p.flightEnd=p.flightStart+msTime; p.expRev=bRev; p.wear=10/safeD;
+    
+    State.sideMissions.forEach(m => {
+        if(!m.readyToClaim && p.assignedRoute === m.reqRoute && p.role === m.reqRole) {
+            m.readyToClaim = true;
+            toast(`Show Award Won: ${m.title}`);
+            if($('tab-checklist').classList.contains('active')) renderSideMissions();
+        }
+    });
+
+    needsFleetRender = true; updateHUD();
+  }
+  function dispatchAll() { State.fleet.filter(p=>p.status==='READY'&&p.assignedRoute&&p.assignedPilot).forEach(p=>dispatchFlight(p.uid)); }
+  function maintainAirframe(pUid) { const p=State.fleet.find(x=>x.uid===pUid); if(!p||p.status==='IN_FLIGHT')return; let c=Math.ceil((100-p.condition)*0.5); if(State.funds<c)return; State.funds-=c; p.condition=100; updateHUD(); needsFleetRender = true; }
+  function maintainAll() { let c=0; State.fleet.filter(p=>p.condition<90&&p.status!=='IN_FLIGHT').forEach(p=>c+=Math.ceil((100-p.condition)*0.5)); if(c===0||State.funds<c)return; State.funds-=c; State.fleet.forEach(p=>p.condition=100); updateHUD(); renderFleet(); }
+
+  /* ================= 10-LANE MINERAL AUCTIONS (UNTOUCHED CRAZY BID SPIKES!) ================= */
+  function initAuction(uid, type) {
+    if(State.auctions.length>=10){toast("Auction house full.");return;}
+    let item;
+    if(type==='plane') { let i=State.fleet.findIndex(x=>x.uid===uid); if(i===-1)return; item=State.fleet[i]; if(item.assignedPilot){ let px=State.pilots.find(x=>x.uid===item.assignedPilot); if(px)px.assignedTo=null; } State.fleet.splice(i,1); }
+    if(type==='pilot') { let i=State.pilots.findIndex(x=>x.uid===uid); if(i===-1)return; item=State.pilots[i]; State.pilots.splice(i,1); }
+    
+    State.auctions.push({ item:item, type:type, baseVal:item.value, timer:20.0, currentBid:Math.max(1, Math.floor(item.value*0.9)), log:[] });
+    updateHUD(); renderAuctions(); renderFleet(); renderPilots(); toast("Consigned to Mineral Auctions.");
+  }
+  
+  function fillAuctions(type) {
+    let a=10-State.auctions.length; if(a<=0) { toast("Auction house full."); return; }
+    
+    let c = type==='planes' 
+      ? State.fleet.filter(p=>p.status==='READY'&&!p.assignedPilot).sort((x,y)=>x.value-y.value) 
+      : State.pilots.filter(p=>!p.assignedTo&&!p.locked).sort((x,y)=>x.value-y.value);
+        
+    if(c.length===0){toast("No eligible specimens/staff available.");return;}
+    
+    let loaded = 0;
+    c.slice(0,a).forEach(item=>{ 
+      if(type==='planes'){ let i=State.fleet.findIndex(x=>x.uid===item.uid); State.fleet.splice(i,1); }
+      if(type==='pilots'){ let i=State.pilots.findIndex(x=>x.uid===item.uid); State.pilots.splice(i,1); }
+      State.auctions.push({item:item, type:type === 'planes' ? 'plane' : 'pilot', baseVal:item.value, timer:20.0, currentBid:Math.max(1, Math.floor(item.value*0.9)), log:[]}); 
+      loaded++;
+    });
+    
+    updateHUD(); renderPilots(); renderFleet(); renderAuctions(); 
+    toast(`Consigned ${loaded} lots to Mineral Auctions.`);
+  }
+
+  function renderAuctions() {
+    const b=$('auction-board'); if(!b)return; $('auction-count').innerText=State.auctions.length; b.innerHTML='';$('auction-idle').style.display = State.auctions.length===0 ? 'block' : 'none';
+    State.auctions.forEach((a) => {
+      if (a.type === 'plane' || a.type === 'planes') ensureTreeImage(a.item);
+      let hLog = a.log.map(l=>`<div>${l}</div>`).join('');
+      let col = a.item.tierColor || '#fff';
+      
+      b.innerHTML+=`
+        <div class="auction-slot">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <div style="display:flex; gap:8px; align-items:center;">
+              ${(a.type === 'plane' || a.type === 'planes') ? `<img src="${a.item.imgData}" style="width:40px; height:40px; image-rendering:pixelated; background:#000; border:1px solid #142014;" />` : ''}
+              <div>
+                <div style="font-size:12px;font-weight:bold;color:${col};">${a.item.name}</div>
+                <div class="stat-block" style="font-size:9px;">EST: $${fmt(a.baseVal)}</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <div id="auc-timer-${a.item.uid}" style="font-size:8.5px;color:var(--silver-dim);font-weight:bold;">TIME [${a.timer.toFixed(1)}s]</div>
+              <div id="auc-bid-${a.item.uid}" style="font-size:14px;font-weight:bold;color:var(--status-green);font-family:monospace;">$${fmt(a.currentBid)}</div>
+            </div>
+          </div>
+          <div class="auction-timer-bg"><div id="auc-bar-${a.item.uid}" class="auction-timer-bar" style="width:${(a.timer/20)*100}%;"></div></div>
+          <div class="auction-log">${hLog}</div>
+        </div>
+      `;
+    });
+  }
+
+  /* ================= GAME LOOP ================= */
+  const FACTIONS = ["Heritage Auctions","Smithsonian Buyer","Tucson Private Collector","Munich Gallery"];
+  function gameTick() {
+    let n = Date.now();
+    let auctionChanged = false;
+    
+    // Market Timer
+    State.marketTimer -= 0.1;
+    let mT = $('market-timer'); if(mT) mT.innerText = Math.max(0, State.marketTimer).toFixed(1);
+    if(State.marketTimer <= 0) { State.marketTimer = 10.0; refreshMarket(); }
+
+    // Exhibitions
+    State.fleet.forEach(p => {
+      if(p.status==='IN_FLIGHT') {
+        let pct = ((n-p.flightStart)/p.flightDuration)*100;
+        if(pct>=100) { 
+          p.status='READY'; State.funds+=p.expRev; p.condition=Math.max(10, p.condition-p.wear); updateHUD(); 
+          let st=$(`st-${p.uid}`); if(st) st.innerHTML=`STATUS: <strong style="color:#fff;">READY</strong>`; 
+          let b=$(`bar-${p.uid}`); if(b){b.style.width='0%'; b.parentElement.style.display='none';} 
+          
+          if(State.automation.autoDispatch && p.assignedRoute && p.assignedPilot) {
+            setTimeout(() => dispatchFlight(p.uid), 200);
+          } else {
+            needsFleetRender = true; 
+          }
+        } 
+        else { let b=$(`bar-${p.uid}`); if(b) b.style.width=pct+'%'; }
+      }
+    });
+
+    if(needsFleetRender) {
+      if($('tab-fleet').classList.contains('active')) renderFleet();
+      needsFleetRender = false;
+    }
+
+    // Auctions (Exact Unchanged Bidding War & Overtime Logic!)
+    if(State.auctions.length>0) {
+      for(let i=State.auctions.length-1; i>=0; i--) {
+        let a=State.auctions[i]; a.timer-=0.1; 
+        
+        let uiT = $(`auc-timer-${a.item.uid}`);
+        let uiB = $(`auc-bar-${a.item.uid}`);
+        let uiBid = $(`auc-bid-${a.item.uid}`);
+
+        if(a.timer>0 && Math.random()<0.10) {
+          let f=FACTIONS[Math.floor(Math.random()*FACTIONS.length)]; let m=1.05+(Math.random()*0.10);
+          if(Math.random()<0.015) { m=2.0+(Math.random()*18.0); a.log.push(`<span style="color:var(--status-amber);">[BID WAR] Spike!</span>`); }
+          let nB=Math.floor(a.currentBid*m); if(nB<=a.currentBid) nB=a.currentBid+1; a.currentBid=nB;
+          a.log.push(`<span style="color:var(--silver-bright);">[${f}] bids $${fmt(a.currentBid)}</span>`);
+          if(a.log.length>3) a.log.shift();
+          if(a.timer<=1.0){ a.timer=3.0; a.log.push(`<span style="color:var(--status-red);">[OVERTIME] Reset to 3s!</span>`); }
+          if(uiBid) uiBid.innerText = "$" + fmt(a.currentBid);
+          auctionChanged = true;
+        } else {
+          if(uiT) uiT.innerText = `TIME [${Math.max(0, a.timer).toFixed(1)}s]`;
+          if(uiB) { uiB.style.width = ((a.timer/20)*100) + '%'; uiB.style.background = a.timer <= 3 ? 'var(--status-red)' : 'var(--status-green)'; }
+        }
+
+        if(a.timer<=0){ 
+          State.funds+=a.currentBid; State.statAuctionsSold++;
+          toast(`SOLD for $${fmt(a.currentBid)}!`); 
+          State.auctions.splice(i,1); updateHUD(); 
+          auctionChanged = true;
+        }
+      }
+      
+      if(auctionChanged && $('tab-auction').classList.contains('active')) renderAuctions();
+    }
+  }
+
+  /* ================= INIT & NAVIGATION ================= */
+  function setTab(tabId) {
+    document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); if(b.getAttribute('onclick').includes(tabId)) b.classList.add('active'); });
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    const target = $('tab-'+tabId); if(target) target.classList.add('active');
+
+    if(tabId==='fleet') renderFleet();
+    if(tabId==='pilots') renderPilots();
+    if(tabId==='routes') renderRoutes();
+    if(tabId==='auction') renderAuctions();
+    if(tabId==='checklist') updateAutomationUI();
+    if(tabId==='upgrades') renderUpgrades();
+    if(tabId==='gallery') renderGallery();
+  }
+  function godMode() {
+    State.funds += 1000000; State.fuelReserve += 100000;
+    State.fleet.forEach(p => p.condition = 100);
+    toast("SMITHSONIAN ENDOWMENT: +$1M Cash, +100K Prep Units, Cases Restored.");
+    updateHUD(); renderFleet();
+  }
+
+  function initUI() {
+    if(!State.gallery) State.gallery = [];
+    if(!State.routes || State.routes.length < 400) State.routes = generateRoutes();
+    if(!State.sideMissions || State.sideMissions.length === 0) generateSideMissions();
+    updateHUD(); refreshMarket();
+    if(globalInterval) clearInterval(globalInterval); globalInterval = setInterval(gameTick, 100);
+  }
+  initUI();
+</script>
+</body>
+</html>
